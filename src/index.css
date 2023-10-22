@@ -18,3 +18,7 @@
 .language-selector {
   display: flex;
 }
+
+td {
+  border: 1px solid red;
+}

@@ -1,138 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import DataTable from './table';
 
-function KnapsackApp() {
-  const [items, setItems] = useState([]);
-  const [newItem, setNewItem] = useState({ name: '', weight: 0, value: 0 });
-  const [capacity, setCapacity] = useState(0);
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [totalValue, setTotalValue] = useState(0);
+const Knapsack = () => {
+  const [coordinates, setCoordinates] = useState([]);
+  const [items, setItems] = useState([
+    { name: 'Item 1', weight: 6, value: 5 },
+    { name: 'Item 2', weight: 4, value: 3 },
+    { name: 'Item 3', weight: 3, value: 1 },
+    { name: 'Item 4', weight: 2, value: 3 },
+    { name: 'Item 5', weight: 5, value: 6 },
+  ]);
+  const [maxWeight] = useState(10);
+  const [result, setResult] = useState(null);
 
-  const handleInputChange = (index, field, value) => {
-    const updatedItems = [...items];
-    updatedItems[index][field] = value;
-    setItems(updatedItems);
-  };
+  const calculateKnapsack = () => {
+    const dp = Array(items.length + 1)
+      .fill(null)
+      .map(() => Array(maxWeight + 1).fill(0));
 
-  const handleAddItem = () => {
-    setItems([...items, newItem]);
-    setNewItem({ name: '', weight: 0, value: 0 });
-  };
-
-  const handleDeleteItem = (index) => {
-    const updatedItems = [...items];
-    updatedItems.splice(index, 1);
-    setItems(updatedItems);
-  };
-
-  const knapsackGreedy = () => {
-    const sortedItems = [...items];
-    sortedItems.sort((a, b) => b.value / b.weight - a.value / a.weight);
-
-    let currentWeight = 0;
-    let currentValue = 0;
-    const selected = [];
-
-    for (let i = 0; i < sortedItems.length; i++) {
-      if (currentWeight + sortedItems[i].weight <= capacity) {
-        selected.push(sortedItems[i]);
-        currentWeight += sortedItems[i].weight;
-        currentValue += sortedItems[i].value;
+    for (let i = 1; i <= items.length; i++) {
+      const currentItem = items[i - 1];
+      for (let w = 1; w <= maxWeight; w++) {
+        if (currentItem.weight <= w) {
+          dp[i][w] = Math.max(
+            dp[i - 1][w],
+            dp[i - 1][w - currentItem.weight] + currentItem.value
+          );
+        } else {
+          dp[i][w] = dp[i - 1][w];
+        }
       }
     }
 
-    setSelectedItems(selected);
-    setTotalValue(currentValue);
+    if (coordinates.length === 0) {
+      setCoordinates(coordinates);
+    }
+
+    for (let i = 0; i <= items.length; i++) {
+      for (let w = 0; w <= maxWeight; w++) {
+        coordinates.push({
+          i,
+          w,
+          dp: dp[i][w],
+        });
+      }
+    }
+
+    setResult(dp[items.length][maxWeight]);
   };
 
-  return (
-    <div>
-      <h1>Задача о рюкзаке</h1>
-      <div>
-        <label>
-          Вместимость рюкзака:
-          <input
-            type="number"
-            value={capacity}
-            onChange={(e) => setCapacity(e.target.value)}
-          />
-        </label>
-      </div>
-      <div>
-        <h2>Добавить предмет:</h2>
-        <div>
-          <label>
-            Название:
-            <input
-              type="text"
-              value={newItem.name}
-              onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-            />
-          </label>
-          <label>
-            Вес:
-            <input
-              type="number"
-              value={newItem.weight}
-              onChange={(e) => setNewItem({ ...newItem, weight: parseInt(e.target.value) })}
-            />
-          </label>
-          <label>
-            Ценность:
-            <input
-              type="number"
-              value={newItem.value}
-              onChange={(e) => setNewItem({ ...newItem, value: parseInt(e.target.value) })}
-            />
-          </label>
-          <button onClick={handleAddItem}>Добавить</button>
-        </div>
-      </div>
-      <div>
-        <h2>Предметы:</h2>
-        {items.map((item, index) => (
-          <div key={index}>
-            <label>
-              Название:
-              <input
-                type="text"
-                value={item.name || ''}
-                onChange={(e) => handleInputChange(index, 'name', e.target.value)}
-              />
-            </label>
-            <label>
-              Вес:
-              <input
-                type="number"
-                value={item.weight || ''}
-                onChange={(e) => handleInputChange(index, 'weight', parseInt(e.target.value))}
-              />
-            </label>
-            <label>
-              Ценность:
-              <input
-                type="number"
-                value={item.value || ''}
-                onChange={(e) => handleInputChange(index, 'value', parseInt(e.target.value))}
-              />
-            </label>
-            <button onClick={() => handleDeleteItem(index)}>Удалить</button>
-          </div>
-        ))}
-        <button onClick={knapsackGreedy}>Решить</button>
-      </div>
-      <div>
-        <h2>Выбранные предметы:</h2>
-        <ul>
-          {selectedItems.map((item) => (
-            <li key={item.name}>
-              {item.name} - {item.value} (вес: {item.weight})
-            </li>
-          ))}
-        </ul>
-        <h2>Общая стоимость: {totalValue}</h2>
-      </div>
-    </div>
-  );
-}
+  useEffect(() => {
+    calculateKnapsack(); // Вызовем calculateKnapsack при монтировании
+  }, []); // Пустая зависимость для выполнения только при монтировании
 
-export default KnapsackApp;
+  return (
+    <>
+      <div>
+        <h1>Задача о рюкзаке</h1>
+        <h2>Максимальный вес рюкзака: {maxWeight}</h2>
+        <h2>Максимальная стоимость: {result}</h2>
+        <DataTable data={coordinates} items={items.length + 1} maxWeight={maxWeight + 1} />
+      </div>
+    </>
+  );
+};
+
+export default React.memo(Knapsack);
