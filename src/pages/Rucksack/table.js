@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 
 const DataTable = ({ data, items, maxWeight }) => {
+  console.log('1', data.length);
   const [dataRowValues, setDataRowValues] = useState([]);
-  console.log(data.length)
+
   useEffect(() => {
     const headerCells = [];
     for (let i = 0; i < maxWeight; i++) {
@@ -48,6 +49,10 @@ const DataTable = ({ data, items, maxWeight }) => {
     }
 
     setDataRowValues(tables);
+
+    return () => {
+      setDataRowValues([]);
+    };
   }, [data, items, maxWeight]);
 
   return <div>{dataRowValues}</div>;
