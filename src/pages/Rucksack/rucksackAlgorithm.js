@@ -158,7 +158,13 @@ function KnapsackProblem() {
         <p>Максимальная стоимость: {maxValue}</p>
       </div>
       {showDataTable && <Table items={selectedItems} />}
-      {showDataTable && <DataTable data={coordinates} items={items.length + 1} maxWeight={capacity + 1} />}
+      {showDataTable && (
+        <DataTable
+          data={coordinates}
+          items={items.length + 1}
+          maxWeight={capacity + 1}
+        />
+      )}
     </div>
   );
 }
