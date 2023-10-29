@@ -17,10 +17,6 @@ const Nav = () => {
   return (
     <>
       <div className="nav">
-        <button className="language-selector-button" onClick={toggleLanguageSelector}>
-          <GlobeIcon />
-        </button>
-        {isLanguageSelectorOpen && <LanguageSelector />}
         <ul className="nav-list">
           {navLinks.map((navLink, index) => (
             <li key={index}>

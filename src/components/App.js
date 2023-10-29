@@ -1,8 +1,9 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Nav from './navigation';
 import Home from '../pages/Home/index';
-import RucksackMethodA from '../pages/Rucksack/methodDP/RucksackMethodA';
-import Rucksack from '../pages/Rucksack/methodDP/index';
+import Rucksack from '../pages/Rucksack/index';
+import KnapsackSolver from '../pages/Rucksack/methodGA';
+
 const router = createBrowserRouter([
   {
     path: '/',
@@ -17,8 +18,8 @@ const router = createBrowserRouter([
         element: <Rucksack />,
         children: [
           {
-            path: 'methodA', // Используйте относительный путь
-            element: <RucksackMethodA />,
+            path: 'methodB',
+            element: <KnapsackSolver />,
           },
         ],
       },
