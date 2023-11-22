@@ -4,7 +4,6 @@ import './index.css';
 import App from './components/App';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
-// import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -13,4 +12,3 @@ root.render(
   </I18nextProvider>
 );
 
-// reportWebVitals(console.log);

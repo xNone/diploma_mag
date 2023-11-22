@@ -1,7 +1,18 @@
 import React, { useState } from 'react';
 import DataTable from './table';
-// Компонент DataTable для отображения предметов
+import {
+  Chart as ChartJS,
+  BarElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+
 function Table({ items }) {
+  ChartJS.register(BarElement, Tooltip, Legend, CategoryScale, LinearScale);
+
   return (
     <div>
       <h2>Выбранные предметы</h2>
@@ -17,6 +28,8 @@ function Table({ items }) {
 }
 
 function KnapsackProblem() {
+  ChartJS.register(BarElement, Tooltip, Legend, CategoryScale, LinearScale);
+
   const [items, setItems] = useState([]);
   const [capacity, setCapacity] = useState(0);
   const [selectedItems, setSelectedItems] = useState([]);
@@ -74,17 +87,17 @@ function KnapsackProblem() {
       }
     }
 
+    const updatedCoordinates = [];
     for (let i = 0; i <= items.length; i++) {
       for (let w = 0; w <= capacity; w++) {
-        coordinates.push({
+        updatedCoordinates.push({
           i,
           w,
           dp: dp[i][w],
         });
       }
     }
-    console.log('dp', dp);
-    console.log('coordinates', coordinates);
+    setCoordinates(updatedCoordinates);
 
     setMaxWeight(capacity - w);
     setSelectedItems(selected);
@@ -93,23 +106,29 @@ function KnapsackProblem() {
 
   return (
     <div>
-      <h1>Задача о рюкзаке</h1>
+      <h1>Задача о рюкзаке (Метод динамічного програмування)</h1>
       <div>
         <h2>Ввод предметов</h2>
         <div>
+          <label for='titleDP'>Название</label>
           <input
+            id='titleDP'
             type='text'
             placeholder='Название'
             value={newItemName}
             onChange={(e) => setNewItemName(e.target.value)}
           />
+          <label for='weightDP'>Вес</label>
           <input
+            id='weightDP'
             type='number'
             placeholder='Вес'
             value={newItemWeight}
             onChange={(e) => setNewItemWeight(Number(e.target.value))}
           />
+          <label for='valueDP'>Ценность</label>
           <input
+            id='valueDP'
             type='number'
             placeholder='Ценность'
             value={newItemValue}
@@ -152,18 +171,37 @@ function KnapsackProblem() {
         />
         <button onClick={solveKnapsack}>Решить</button>
       </div>
-      <div>
-        <h2>Результат</h2>
-        <p>Максимальный вес рюкзака: {maxWeight}</p>
-        <p>Максимальная стоимость: {maxValue}</p>
-      </div>
-      {showDataTable && <Table items={selectedItems} />}
       {showDataTable && (
-        <DataTable
-          data={coordinates}
-          items={items.length + 1}
-          maxWeight={capacity + 1}
-        />
+        <>
+          <Table items={selectedItems} />
+          <DataTable
+            data={coordinates}
+            items={items.length + 1}
+            maxWeight={capacity + 1}
+          />
+
+          <Bar
+            data={{
+              labels: coordinates.map((coord, index) => `Шаг ${index + 1}`),
+              datasets: [
+                {
+                  label: 'Вес рюкзака',
+                  data: coordinates.map((coord) => coord.dp),
+                  backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                  borderColor: 'rgba(75, 192, 192, 1)',
+                  borderWidth: 1,
+                },
+                {
+                  label: 'Ценность',
+                  data: coordinates.map((coord) => coord.dp), // Changed 'value' to 'dp' here
+                  backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                  borderColor: 'rgba(255, 99, 132, 1)',
+                  borderWidth: 1,
+                },
+              ],
+            }}
+          />
+        </>
       )}
     </div>
   );

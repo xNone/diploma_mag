@@ -7,16 +7,16 @@ const Rucksack = () => {
   return (
     <div className='home-container'>
       <h1>Title Rucksack</h1>
-      <Link to='/rucksack' className='button'>
-        Method 123
+      <Link to='/rucksack' className='button link-button'>
+        Метод динамічного програмування 
       </Link>
-      <Link to='methodB' className='button'>
-        Method B
+      <Link to='methodGA' className='button link-button'>
+        Метод жадібний алгоритм 
       </Link>
 
       <Routes>
         <Route path='/' element={<KnapsackProblem />} />
-        <Route path='methodB' element={<KnapsackSolver />} />
+        <Route path='methodGA' element={<KnapsackSolver />} />
       </Routes>
     </div>
   );

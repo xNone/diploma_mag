@@ -1,26 +1,44 @@
-import React, { useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageSelector from './LanguageSelector';
 import GlobeIcon from './languageSVG';
 
-const navLinks = ['Home', 'Rucksack', 'Battle'];
+const navLinks = ['Home', 'Rucksack', 'Salesman', 'Shortcut', 'Recognition'];
 
 const Nav = () => {
   const { t } = useTranslation();
   const [isLanguageSelectorOpen, setIsLanguageSelectorOpen] = useState(false);
+  const [activeLink, setActiveLink] = useState(null);
+  const location = useLocation();
 
   const toggleLanguageSelector = () => {
     setIsLanguageSelectorOpen(!isLanguageSelectorOpen);
   };
+
+  useEffect(() => {
+    // Определение активного пути из URL
+    const path = location.pathname.split('/')[1] || ''; // используем '' по умолчанию
+    setActiveLink(path);
+  }, [location.pathname]);
 
   return (
     <>
       <div className="nav">
         <ul className="nav-list">
           {navLinks.map((navLink, index) => (
-            <li key={index}>
-              <NavLink to={navLink === 'Home' ? '/' : navLink.toLowerCase()}>
+            <li
+              key={index}
+              className={`${
+                (activeLink === '' && navLink === 'Home') || activeLink === navLink.toLowerCase()
+                  ? 'active'
+                  : ''
+              } ${isLanguageSelectorOpen ? 'hovered' : ''}`}
+            >
+              <NavLink
+                to={navLink === 'Home' ? '/' : `/${navLink.toLowerCase()}`}
+                activeClassName="active"
+              >
                 {t(navLink)}
               </NavLink>
             </li>
