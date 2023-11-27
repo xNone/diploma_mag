@@ -87,7 +87,7 @@ const FloydWarshall = () => {
   const generateStep = (dist, next, stepNumber) => {
     const n = dist.length;
 
-    let step = `<h3>Шаг ${stepNumber + 1}</h3>`;
+    let step = `<h3>${t('Step')} ${stepNumber + 1}</h3>`;
     step += '<table border="1"><thead><tr><th></th>';
 
     // Заголовки столбцов
@@ -138,17 +138,17 @@ const FloydWarshall = () => {
     <div>
       <div className='div-size-matrix'>
         <div className='enter-size-matrix'>
-          <h2>{t('Выберите матрицу')}</h2>
+          <h2>{t('Select a matrix')}</h2>
           <select value={size} onChange={handleSizeChange}>
-            <option value={2}>Ввести вручную</option>
-            <option value={6}>Small</option>
-            <option value={10}>Medium</option>
-            <option value={20}>Large</option>
+            <option value={2}>{t('Manual Entry')}</option>
+            <option value={6}>{t('Small')}</option>
+            <option value={10}>{t('Medium')}</option>
+            <option value={20}>{t('Large')}</option>
           </select>
         </div>
         <div className='size-matrix'>
           <label>
-            Размер матрицы:
+            {t('Matrix size')}
             <input
               type='number'
               min='2'
@@ -177,13 +177,22 @@ const FloydWarshall = () => {
               ))}
             </tbody>
           </table>
-          <button onClick={handleSolveClick}>Решить</button>
+          <button onClick={handleSolveClick}>{t('Result')}</button>
         </div>
       </div>
+      <ul className='circles'>
+        {[...Array(10)].map((_, index) => (
+          <li key={index}></li>
+        ))}
+      </ul>
       <div id='result-container'>
-        <h2>Шаги решения:</h2>
+        <h2>{t('Solution Steps:')}</h2>
         {solutionSteps.map((step, index) => (
-          <div className='res-matrix-div' key={index} dangerouslySetInnerHTML={{ __html: step }} />
+          <div
+            className='res-matrix-div'
+            key={index}
+            dangerouslySetInnerHTML={{ __html: step }}
+          />
         ))}
       </div>
     </div>

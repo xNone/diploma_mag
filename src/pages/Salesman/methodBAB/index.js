@@ -151,24 +151,24 @@ const TravelingSalesman = () => {
         <h2>{t('Select the data:')}</h2>
         <select onChange={handleSizeChange} value={selectedSize}>
           <option value=''>{t('Manual Entry')}</option>
-          <option value='Small'>Small</option>
-          <option value='Medium'>Medium</option>
-          <option value='Large'>Large</option>
+          <option value='Small'>{t('Small')}</option>
+          <option value='Medium'>{t('Medium')}</option>
+          <option value='Large'>{t('Large')}</option>
         </select>
       </div>
       <div className='main-city-div'>
         <div className='city-div'>
-          <h2>Добавить город:</h2>
+          <h2>{t('Add city:')}</h2>
           <input
             type='text'
-            placeholder='Название города'
+            placeholder={t('City name')}
             value={newCity}
             onChange={(e) => setNewCity(e.target.value)}
           />
-          <button onClick={addCity}>Добавить</button>
+          <button onClick={addCity}>{t('Add')}</button>
         </div>
         <div className='distance-div'>
-          <h2>Добавить расстояние:</h2>
+          <h2>{t('Add distance:')}</h2>
           <div>
             <span for='from'> {t('From-label')} </span>
             <select
@@ -194,21 +194,26 @@ const TravelingSalesman = () => {
             </select>
             <input
               type='number'
-              placeholder='Расстояние'
+              placeholder={t('Distance')}
               value={newDistance}
               onChange={(e) => setNewDistance(e.target.value)}
             />
           </div>
-          <button onClick={addDistance}>Добавить расстояние</button>
+          <button onClick={addDistance}>{t('Add distance:')}</button>
         </div>
       </div>
       <div className='res-div'>
         <div className='button-res'>
-          <button onClick={handleCalculate}>Рассчитать</button>
-          <button onClick={handleShowSteps}>Показать шаги</button>
+          <button onClick={handleCalculate}>{t('Result')}</button>
+          <button onClick={handleShowSteps}>{t('Show steps')}</button>
         </div>
+        <ul className='circles'>
+          {[...Array(10)].map((_, index) => (
+            <li key={index}></li>
+          ))}
+        </ul>
         <div className='matrix-div'>
-          <h2>Матрица расстояний:</h2>
+          <h2>{t('Distance Matrix:')}</h2>
           <table>
             <thead>
               <tr>
@@ -233,19 +238,19 @@ const TravelingSalesman = () => {
       </div>
       {isVisible && (
         <div className='bestDist-div'>
-          <h2>Результат:</h2>
+          <h2>{t('Solution')}:</h2>
           <h2>
-            <span>Лучший путь:</span>{' '}
+            <span>{t('A better way:')}</span>{' '}
             {bestPath.map((index) => cityNames[index]).join(' -> ')}
           </h2>
           <h2>
-            <span>Лучшее расстояние:</span> {bestDistance}
+            <span>{t('Best distance:')}</span> {bestDistance}
           </h2>
         </div>
       )}
       {solutionSteps.length > 0 && (
         <div className='stepDist-div'>
-          <h2>Шаги решения:</h2>
+          <h2>{t('Solution Steps:')}</h2>
           <ol>
             {solutionSteps.map((step, index) => (
               <li key={index}>
@@ -253,10 +258,10 @@ const TravelingSalesman = () => {
                   "{t('Step')} {index + 1}"
                 </p>
                 <p>
-                  Путь:{' '}
+                  {t('The Path:')}{' '}
                   {step.path.map((index) => cityNames[index]).join(' -> ')}
                 </p>
-                <p>Расстояние: {step.distance}</p>
+                <p>{t('Distance')}: {step.distance}</p>
               </li>
             ))}
           </ol>

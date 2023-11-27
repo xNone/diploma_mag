@@ -27,7 +27,7 @@ const ShortcutMethod = () => {
 
   return (
     <div className='home-container'>
-      <h1>Recognition task</h1>
+      <h1>{t('Finding the shortest path in a graph')}</h1>
       <div className='nav-section'>
         <Link
           to='/shortcut'
@@ -36,7 +36,7 @@ const ShortcutMethod = () => {
           }`}
           onClick={() => handleLinkClick('/shortcut')}
         >
-          Алгоритм Флойда
+          {t("Floyd's algorithm")}
         </Link>
         <Link
           to='/shortcut/methodD'
@@ -45,7 +45,7 @@ const ShortcutMethod = () => {
           }`}
           onClick={() => handleLinkClick('/shortcut/methodD')}
         >
-          Алгоритм Дейкстры
+          {t("Dijkstree's algorithm")}
         </Link>
       </div>
       <Routes>

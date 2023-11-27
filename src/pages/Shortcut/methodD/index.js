@@ -106,7 +106,7 @@ const FloydWarshall = () => {
   const generateStep = (dist, stepNumber) => {
     const n = dist.length;
 
-    let step = `<h3>Шаг ${stepNumber + 1}</h3>`;
+    let step = `<h3>${t('Step')} ${stepNumber + 1}</h3>`;
     step += '<table border="1"><thead><tr><th></th>';
 
     // Заголовки столбцов
@@ -126,9 +126,9 @@ const FloydWarshall = () => {
         const isPathCell =
           stepNumber === n - 1 && i !== j && dist[i][j] !== Infinity;
 
-        step += `<td style="background: ${
-          isPathCell ? 'none' : 'none'
-        }">${cellValue === Infinity ? '∞' : cellValue}</td>`;
+        step += `<td style="background: ${isPathCell ? 'none' : 'none'}">${
+          cellValue === Infinity ? '∞' : cellValue
+        }</td>`;
       }
       step += '</tr>';
     }
@@ -171,17 +171,17 @@ const FloydWarshall = () => {
     <div>
       <div className='div-size-matrix'>
         <div className='enter-size-matrix'>
-          <h2>{t('Выберите матрицу')}</h2>
+          <h2>{t('Select a matrix')}</h2>
           <select value={size} onChange={handleSizeChange}>
-            <option value={2}>Ввести вручную</option>
-            <option value={6}>Маленький</option>
+            <option value={2}>{t('Manual Entry')}</option>
+            <option value={6}>{t('Small')}</option>
             <option value={10}>Средний</option>
             <option value={20}>Большой</option>
           </select>
         </div>
         <div className='size-matrix'>
           <label>
-            Размер матрицы:
+            {t('Matrix size')}
             <input
               type='number'
               min='2'
@@ -210,17 +210,22 @@ const FloydWarshall = () => {
               ))}
             </tbody>
           </table>
-          <button onClick={handleSolveClick}>Решить</button>
+          <button onClick={handleSolveClick}>{t('Result')}</button>
         </div>
+        <ul className='circles'>
+          {[...Array(10)].map((_, index) => (
+            <li key={index}></li>
+          ))}
+        </ul>
       </div>
       <div id='result-container'>
         {isVisible && (
           <div id='graph'>
-            <h4>Граф:</h4>
+            <h4>{t('Graph')}</h4>
             <Graph graph={graphData} options={options} />
           </div>
         )}
-        <h2>Шаги решения:</h2>
+        <h2>{t('Solution Steps:')}</h2>
         {solutionSteps.map((step, index) => (
           <div
             className='res-matrix-div'

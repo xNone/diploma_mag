@@ -2,15 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 const DetailedSolution = ({ cityNames, distanceMatrix, bestPath }) => {
+  const { t } = useTranslation();
   return (
     <div className='stepDist-div'>
-      <h2>Detailed Solution:</h2>
+      <h2>{t('Detailed Solution:')}</h2>
       <table>
         <thead>
           <tr>
-            <th>Step</th>
-            <th>Path</th>
-            <th>Distance</th>
+            <th>{t('Step')}</th>
+            <th>{t('Path')}</th>
+            <th>{t('Distance')}</th>
           </tr>
         </thead>
         <tbody>
@@ -25,7 +26,7 @@ const DetailedSolution = ({ cityNames, distanceMatrix, bestPath }) => {
               </td>
               <td>
                 {index === bestPath.length - 1
-                  ? 'Total Distance'
+                  ? `${t('Total Distance')}`
                   : distanceMatrix[step][bestPath[index + 1]]}
               </td>
             </tr>
@@ -166,27 +167,27 @@ const BruteForceTSP = () => {
   return (
     <div>
       <div className='type-enter-div'>
-        <h2>Выберите размер:</h2>
+        <h2>{t('Select the data:')}</h2>
         <select onChange={handleSizeChange} value={selectedSize}>
-          <option value='Manual'>Ручной ввод</option>
-          <option value='Small'>Small</option>
-          <option value='Medium'>Medium</option>
-          <option value='Large'>Large</option>
+          <option value='Manual'>{t('Manual Entry')}</option>
+          <option value='Small'>{t('Small')}</option>
+          <option value='Medium'>{t('Medium')}</option>
+          <option value='Large'>{t('Large')}</option>
         </select>
       </div>
       <div className='main-city-div'>
         <div className='city-div'>
-          <h2>Добавить город:</h2>
+          <h2>{t('Add city:')}</h2>
           <input
             type='text'
-            placeholder='Название города'
+            placeholder={t('City name')}
             value={newCity}
             onChange={(e) => setNewCity(e.target.value)}
           />
-          <button onClick={addCity}>Добавить</button>
+          <button onClick={addCity}>{t('Add')}</button>
         </div>
         <div className='distance-div'>
-          <h2>Добавить расстояние:</h2>
+          <h2>{t('Add distance:')}</h2>
           <div>
             <span for='from'> {t('From-label')} </span>
             <select
@@ -212,20 +213,25 @@ const BruteForceTSP = () => {
             </select>
             <input
               type='number'
-              placeholder='Расстояние'
+              placeholder={t('Distance')}
               value={newDistance}
               onChange={(e) => setNewDistance(e.target.value)}
             />
           </div>
-          <button onClick={addDistance}>Добавить расстояние</button>
+          <button onClick={addDistance}>{t('Add distance:')}</button>
         </div>
       </div>
       <div className='res-div'>
         <div className='button-res'>
-          <button onClick={calculateBruteForce}>Рассчитать</button>
+          <button onClick={calculateBruteForce}>{t('Result')}</button>
         </div>
+        <ul className='circles'>
+          {[...Array(10)].map((_, index) => (
+            <li key={index}></li>
+          ))}
+        </ul>
         <div className='matrix-div'>
-          <h2>Матрица расстояний:</h2>
+          <h2>{t('Distance Matrix:')}</h2>
           <table>
             <thead>
               <tr>
@@ -257,13 +263,13 @@ const BruteForceTSP = () => {
       )}
       {isVisible && (
         <div className='bestDist-div'>
-          <h2>Результат:</h2>
+          <h2>{t('Solution')}:</h2>
           <h2>
-            <span>Лучший путь:</span>{' '}
+            <span>{t('A better way:')}</span>{' '}
             {bestPath.map((index) => cityNames[index]).join(' -> ')}
           </h2>
           <h2>
-            <span>Лучшее расстояние:</span> {bestDistance}
+            <span>{t('Best distance:')}</span> {bestDistance}
           </h2>
         </div>
       )}

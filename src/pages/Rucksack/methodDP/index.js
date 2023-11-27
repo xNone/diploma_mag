@@ -221,7 +221,7 @@ function KnapsackProblem() {
           value={capacity}
           onChange={(e) => setCapacity(Number(e.target.value))}
         />
-        <button onClick={solveKnapsack}>{t('Resolve')}</button>
+        <button onClick={solveKnapsack}>{t('Result')}</button>
       </div>
 
       {showDataTable && (

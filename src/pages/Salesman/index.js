@@ -27,7 +27,7 @@ const Salesman = () => {
 
   return (
     <div className='home-container'>
-      <h1>Title Salesman</h1>
+      <h1>{t('The task of a salesman')}</h1>
       <div className='nav-section'>
         <Link
           to='/salesman'
@@ -36,7 +36,7 @@ const Salesman = () => {
           }`}
           onClick={() => handleLinkClick('/salesman')}
         >
-          Метод гілок і меж
+          {t('Branch and Bound')}
         </Link>
         <Link
           to='/salesman/methodBF'
@@ -45,7 +45,7 @@ const Salesman = () => {
           }`}
           onClick={() => handleLinkClick('/salesman/methodBF')}
         >
-          Метод грубої сили
+          {t('Brute Force')}
         </Link>
       </div>
       <Routes>

@@ -42,7 +42,7 @@ function StepByStepTable({ steps }) {
   );
 }
 
-function KnapsackProblem() {
+function KnapsackSolver() {
   ChartJS.register(BarElement, Tooltip, Legend, CategoryScale, LinearScale);
 
   const [items, setItems] = useState([]);
@@ -164,9 +164,9 @@ function KnapsackProblem() {
               onChange={(e) => handlePresetSizeChange(e.target.value)}
             >
               <option value='Custom'>{t('Manual Entry')}</option>
-              <option value='Small'>Small</option>
-              <option value='Medium'>Medium</option>
-              <option value='Large'>Large</option>
+              <option value='Small'>{t('Small')}</option>
+              <option value='Medium'>{t('Medium')}</option>
+              <option value='Large'>{t('Large')}</option>
             </select>
             {presetSize === 'Custom' && (
               <div className='entr-custom-div'>
@@ -232,12 +232,12 @@ function KnapsackProblem() {
           value={capacity}
           onChange={(e) => setCapacity(Number(e.target.value))}
         />
-        <button onClick={solveKnapsackGreedy}>{t('Resolve')}</button>
+        <button onClick={solveKnapsackGreedy}>{t('Result')}</button>
       </div>
       {showDataTable && (
         <>
           <div>
-            <h2>{t('Result')}</h2>
+            <h2>{t('Solution')}</h2>
             <p>{t('Maximum weight of the backpack:')} {maxWeight}</p>
             <p>{t('Maximum value:')} {maxValue}</p>
           </div>
@@ -286,4 +286,4 @@ function KnapsackProblem() {
   );
 }
 
-export default KnapsackProblem;
+export default KnapsackSolver;
