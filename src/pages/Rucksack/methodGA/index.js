@@ -9,28 +9,30 @@ import {
   LinearScale,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
+import { useTranslation } from 'react-i18next';
 
 function StepByStepTable({ steps }) {
+  const { t } = useTranslation();
+
   return (
     <div>
-      <h2>Поэтапное решение</h2>
       <table>
         <thead>
           <tr>
-            <th>Шаг</th>
-            <th>Выбранный предмет</th>
-            <th>Оставшийся вес</th>
-            <th>Текущий вес рюкзака</th>
-            <th>Текущая ценность</th>
+            <th>{t('Step')}</th>
+            <th>{t('Selected subject')}</th>
+            <th>{t('Remaining weight')}</th>
+            <th>{t('Selected subject')}</th>
+            <th>{t('Current value')}</th>
           </tr>
         </thead>
         <tbody>
           {steps.map((step, index) => (
             <tr key={index}>
               <td>{index + 1}</td>
-              <td>{step.selectedItem ? step.selectedItem.name : 'Нет'}</td>
-              <td>{step.remainingCapacity}</td>
+              <td>{step.selectedItem ? step.selectedItem.name : 'No'}</td>
               <td>{step.currentWeight}</td>
+              <td>{step.remainingCapacity}</td>
               <td>{step.currentValue}</td>
             </tr>
           ))}
@@ -54,6 +56,45 @@ function KnapsackProblem() {
   const [showDataTable, setShowDataTable] = useState(false);
   const [coordinates, setCoordinates] = useState([]);
   const [stepByStep, setStepByStep] = useState([]);
+  const [presetSize, setPresetSize] = useState('Custom');
+  const { t } = useTranslation();
+  const presetSizes = {
+    Custom: { name: 'Custom', weight: 0, value: 0 },
+    Small: [
+      { name: 'A', weight: 6, value: 5 },
+      { name: 'B', weight: 4, value: 3 },
+      { name: 'C', weight: 3, value: 1 },
+      { name: 'D', weight: 2, value: 3 },
+      { name: 'E', weight: 5, value: 6 },
+      // Add more items as needed
+    ],
+    Medium: [
+      { name: 'F', weight: 8, value: 7 },
+      { name: 'G', weight: 5, value: 4 },
+      { name: 'H', weight: 3, value: 2 },
+      // Add more items as needed
+    ],
+    Large: [
+      { name: 'I', weight: 10, value: 9 },
+      { name: 'J', weight: 7, value: 5 },
+      { name: 'K', weight: 4, value: 3 },
+      // Add more items as needed
+    ],
+  };
+
+  const handlePresetSizeChange = (size) => {
+    setPresetSize(size);
+    if (size === 'Custom') {
+      setNewItemName('');
+      setNewItemWeight(0);
+      setNewItemValue(0);
+    } else {
+      // Set default values for selected preset size
+      const defaultItem = presetSizes[size];
+      console.log('defaultItem', defaultItem);
+      setItems(defaultItem);
+    }
+  };
 
   const addItem = () => {
     setItems([
@@ -112,94 +153,110 @@ function KnapsackProblem() {
 
   return (
     <div>
-      <h1>Задача о рюкзаке (Метод жадібний алгоритм)</h1>
-      <div>
-        <h2>Ввод предметов</h2>
-        <div>
-          <label for='titleDP'>Название</label>
-          <input
-            id='titleDP'
-            type='text'
-            placeholder='Название'
-            value={newItemName}
-            onChange={(e) => setNewItemName(e.target.value)}
-          />
-          <label for='weightDP'>Вес</label>
-          <input
-            id='weightDP'
-            type='number'
-            placeholder='Вес'
-            value={newItemWeight}
-            onChange={(e) => setNewItemWeight(Number(e.target.value))}
-          />
-          <label for='valueDP'>Ценность</label>
-          <input
-            id='valueDP'
-            type='number'
-            placeholder='Ценность'
-            value={newItemValue}
-            onChange={(e) => setNewItemValue(Number(e.target.value))}
-          />
-          <button onClick={addItem}>Добавить</button>
+      <div className='main-div'>
+        <div className='tusk-div'>
+          <h2>{t('Entry of items')}</h2>
+          <div class='entr-div'>
+            <label htmlFor='presetSize'>{t('Select the data:')}</label>
+            <select
+              id='presetSize'
+              value={presetSize}
+              onChange={(e) => handlePresetSizeChange(e.target.value)}
+            >
+              <option value='Custom'>{t('Manual Entry')}</option>
+              <option value='Small'>Small</option>
+              <option value='Medium'>Medium</option>
+              <option value='Large'>Large</option>
+            </select>
+            {presetSize === 'Custom' && (
+              <div className='entr-custom-div'>
+                <label htmlFor='titleDP'>{t('Title')}</label>
+                <input
+                  id='titleDP'
+                  type='text'
+                  placeholder={t('Title')}
+                  value={newItemName}
+                  onChange={(e) => setNewItemName(e.target.value)}
+                />
+                <label htmlFor='weightDP'>{t('Weight')}</label>
+                <input
+                  id='weightDP'
+                  type='number'
+                  placeholder={t('Weight')}
+                  value={newItemWeight}
+                  onChange={(e) => setNewItemWeight(Number(e.target.value))}
+                />
+                <label htmlFor='valueDP'>{t('Value')}</label>
+                <input
+                  id='valueDP'
+                  type='number'
+                  placeholder={t('Value')}
+                  value={newItemValue}
+                  onChange={(e) => setNewItemValue(Number(e.target.value))}
+                />
+              </div>
+            )}
+            <button onClick={addItem}>{t('Add')}</button>
+          </div>
+        </div>
+        <div className='table-div'>
+          <h2>{t('Added items')}</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>{t('Title')}</th>
+                <th>{t('Weight')}</th>
+                <th>{t('Value')}</th>
+                <th>{t('Actions')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item, index) => (
+                <tr key={index}>
+                  <td>{item.name}</td>
+                  <td>{item.weight}</td>
+                  <td>{item.value}</td>
+                  <td>
+                    <button onClick={() => removeItem(index)}>{t('Delete')}</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
-      <div>
-        <h2>Добавленные предметы</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Название</th>
-              <th>Вес</th>
-              <th>Ценность</th>
-              <th>Действия</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item, index) => (
-              <tr key={index}>
-                <td>{item.name}</td>
-                <td>{item.weight}</td>
-                <td>{item.value}</td>
-                <td>
-                  <button onClick={() => removeItem(index)}>Удалить</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div>
-        <h2>Ввод веса рюкзака</h2>
+      <div className='enter-weight-div'>
+        <h2>{t('Entering the weight of the rucksack')}</h2>
         <input
           type='number'
           value={capacity}
           onChange={(e) => setCapacity(Number(e.target.value))}
         />
-        <button onClick={solveKnapsackGreedy}>Решить</button>
+        <button onClick={solveKnapsackGreedy}>{t('Resolve')}</button>
       </div>
       {showDataTable && (
         <>
           <div>
-            <h2>Результат</h2>
-            <p>Максимальный вес рюкзака: {maxWeight}</p>
-            <p>Максимальная стоимость: {maxValue}</p>
+            <h2>{t('Result')}</h2>
+            <p>{t('Maximum weight of the backpack:')} {maxWeight}</p>
+            <p>{t('Maximum value:')} {maxValue}</p>
           </div>
           <DataTable items={selectedItems} />
           <StepByStepTable steps={stepByStep} />
-          (
+
           <Bar
             data={{
-              labels: coordinates.map((coord, index) => `Шаг ${index + 1}`),
+              labels: coordinates.map((coord, index) => `${t('Step')} ${index + 1}`),
               datasets: [
                 {
-                  label: 'Вес рюкзака',
+                  label: t('Backpack weight'),
                   data: coordinates.map((coord) => coord.weight),
                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
                   borderColor: 'rgba(75, 192, 192, 1)',
                   borderWidth: 1,
                 },
                 {
-                  label: 'Ценность',
+                  label: t('Value'),
                   data: coordinates.map((coord) => coord.value),
                   backgroundColor: 'rgba(255, 99, 132, 0.2)',
                   borderColor: 'rgba(255, 99, 132, 1)',
@@ -218,9 +275,13 @@ function KnapsackProblem() {
               },
             }}
           />
-          )
         </>
       )}
+      <ul className='circles'>
+        {[...Array(10)].map((_, index) => (
+          <li key={index}></li>
+        ))}
+      </ul>
     </div>
   );
 }

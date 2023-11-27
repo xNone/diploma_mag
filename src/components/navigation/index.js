@@ -17,27 +17,31 @@ const Nav = () => {
   };
 
   useEffect(() => {
-    // Определение активного пути из URL
-    const path = location.pathname.split('/')[1] || ''; // используем '' по умолчанию
+    const path = location.pathname.split('/')[1] || '';
     setActiveLink(path);
   }, [location.pathname]);
 
   return (
     <>
-      <div className="nav">
-        <ul className="nav-list">
+      <div className='GlobeIcon-div' onClick={toggleLanguageSelector}>
+        {GlobeIcon()}
+      </div>
+      {isLanguageSelectorOpen && <LanguageSelector></LanguageSelector>}
+      <div className='nav'>
+        <ul className='nav-list'>
           {navLinks.map((navLink, index) => (
             <li
               key={index}
               className={`${
-                (activeLink === '' && navLink === 'Home') || activeLink === navLink.toLowerCase()
+                (activeLink === '' && navLink === 'Home') ||
+                activeLink === navLink.toLowerCase()
                   ? 'active'
                   : ''
-              } ${isLanguageSelectorOpen ? 'hovered' : ''}`}
+              }`}
             >
               <NavLink
                 to={navLink === 'Home' ? '/' : `/${navLink.toLowerCase()}`}
-                activeClassName="active"
+                activeClassName='active'
               >
                 {t(navLink)}
               </NavLink>

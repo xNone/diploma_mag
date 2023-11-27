@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const TravelingSalesman = () => {
   const [cityNames, setCityNames] = useState([]);
@@ -11,7 +12,8 @@ const TravelingSalesman = () => {
   const [bestDistance, setBestDistance] = useState(Number.MAX_VALUE);
   const [isVisible, setIsVisible] = useState(false);
   const [solutionSteps, setSolutionSteps] = useState([]);
-
+  const [selectedSize, setSelectedSize] = useState('');
+  const { t } = useTranslation();
   const addCity = () => {
     if (newCity) {
       setCityNames([...cityNames, newCity]);
@@ -30,6 +32,25 @@ const TravelingSalesman = () => {
       updatedMatrix[column][row] = parseInt(newDistance);
       setDistanceMatrix(updatedMatrix);
       setNewDistance('');
+    }
+  };
+
+  const handleSizeChange = (e) => {
+    const size = e.target.value;
+    setSelectedSize(size);
+
+    // Set cityNames and distanceMatrix based on the selected size
+    if (size === 'Small') {
+      setCityNames(['A', 'B', 'C']);
+      setDistanceMatrix([
+        [0, 1, 4],
+        [1, 0, 2],
+        [4, 2, 0],
+      ]);
+    } else if (size === 'Medium') {
+      // Set Medium size data
+    } else if (size === 'Large') {
+      // Set Large size data
     }
   };
 
@@ -76,7 +97,9 @@ const TravelingSalesman = () => {
 
       for (let j = 0; j < matrix[0].length; j++) {
         if (!path.includes(j)) {
-          const column = matrix.map((row) => row[j]).filter((_, i) => !path.includes(i));
+          const column = matrix
+            .map((row) => row[j])
+            .filter((_, i) => !path.includes(i));
           localLowerBound += Math.min(...column);
         }
       }
@@ -89,17 +112,15 @@ const TravelingSalesman = () => {
     return H;
   };
 
-  const startPath = [0];
-
   const handleCalculate = () => {
-    const initialLowerBound = calculateLowerBound(startPath, distanceMatrix);
-    calculatePath(startPath, distanceMatrix, initialLowerBound);
+    const initialLowerBound = calculateLowerBound([0], distanceMatrix);
+    calculatePath([0], distanceMatrix, initialLowerBound);
   };
 
   const handleShowSteps = () => {
     const steps = [];
-    const initialLowerBound = calculateLowerBound(startPath, distanceMatrix);
-    calculatePathWithSteps(startPath, distanceMatrix, initialLowerBound, steps);
+    const initialLowerBound = calculateLowerBound([0], distanceMatrix);
+    calculatePathWithSteps([0], distanceMatrix, initialLowerBound, steps);
     setSolutionSteps(steps);
   };
 
@@ -126,84 +147,114 @@ const TravelingSalesman = () => {
 
   return (
     <div>
-      <div>
-        <h3>Добавить город:</h3>
-        <input
-          type='text'
-          placeholder='Название города'
-          value={newCity}
-          onChange={(e) => setNewCity(e.target.value)}
-        />
-        <button onClick={addCity}>Добавить</button>
-      </div>
-      <div>
-        <h3>Добавить расстояние:</h3>
-        <select onChange={(e) => setRow(parseInt(e.target.value))}>
-          {cityNames.map((city, index) => (
-            <option key={index} value={index}>
-              {city}
-            </option>
-          ))}
+      <div className='type-enter-div'>
+        <h2>{t('Select the data:')}</h2>
+        <select onChange={handleSizeChange} value={selectedSize}>
+          <option value=''>{t('Manual Entry')}</option>
+          <option value='Small'>Small</option>
+          <option value='Medium'>Medium</option>
+          <option value='Large'>Large</option>
         </select>
-        <select onChange={(e) => setColumn(parseInt(e.target.value))}>
-          {cityNames.map((city, index) => (
-            <option key={index} value={index}>
-              {city}
-            </option>
-          ))}
-        </select>
-        <input
-          type='number'
-          placeholder='Расстояние'
-          value={newDistance}
-          onChange={(e) => setNewDistance(e.target.value)}
-        />
-        <button onClick={addDistance}>Добавить расстояние</button>
       </div>
-      <div>
-        <button onClick={handleCalculate}>Рассчитать</button>
-        <button onClick={handleShowSteps}>Показать шаги</button>
-      </div>
-      <div>
-        <h3>Матрица расстояний:</h3>
-        <table>
-          <thead>
-            <tr>
-              <th></th>
+      <div className='main-city-div'>
+        <div className='city-div'>
+          <h2>Добавить город:</h2>
+          <input
+            type='text'
+            placeholder='Название города'
+            value={newCity}
+            onChange={(e) => setNewCity(e.target.value)}
+          />
+          <button onClick={addCity}>Добавить</button>
+        </div>
+        <div className='distance-div'>
+          <h2>Добавить расстояние:</h2>
+          <div>
+            <span for='from'> {t('From-label')} </span>
+            <select
+              id='from'
+              onChange={(e) => setRow(parseInt(e.target.value))}
+            >
               {cityNames.map((city, index) => (
-                <th key={index}>{city}</th>
+                <option key={index} value={index}>
+                  {city}
+                </option>
               ))}
-            </tr>
-          </thead>
-          <tbody>
-            {cityNames.map((city, rowIndex) => (
-              <tr key={rowIndex}>
-                <th>{city}</th>
-                {cityNames.map((_, colIndex) => (
-                  <td key={colIndex}>{distanceMatrix[rowIndex][colIndex]}</td>
+            </select>
+            <label for='before'> {t('Before-label')} </label>
+            <select
+              id='before'
+              onChange={(e) => setColumn(parseInt(e.target.value))}
+            >
+              {cityNames.map((city, index) => (
+                <option key={index} value={index}>
+                  {city}
+                </option>
+              ))}
+            </select>
+            <input
+              type='number'
+              placeholder='Расстояние'
+              value={newDistance}
+              onChange={(e) => setNewDistance(e.target.value)}
+            />
+          </div>
+          <button onClick={addDistance}>Добавить расстояние</button>
+        </div>
+      </div>
+      <div className='res-div'>
+        <div className='button-res'>
+          <button onClick={handleCalculate}>Рассчитать</button>
+          <button onClick={handleShowSteps}>Показать шаги</button>
+        </div>
+        <div className='matrix-div'>
+          <h2>Матрица расстояний:</h2>
+          <table>
+            <thead>
+              <tr>
+                <th></th>
+                {cityNames.map((city, index) => (
+                  <th key={index}>{city}</th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {cityNames.map((city, rowIndex) => (
+                <tr key={rowIndex}>
+                  <th>{city}</th>
+                  {cityNames.map((_, colIndex) => (
+                    <td key={colIndex}>{distanceMatrix[rowIndex][colIndex]}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
       {isVisible && (
-        <>
+        <div className='bestDist-div'>
+          <h2>Результат:</h2>
           <h2>
-            Лучший путь:{' '}
+            <span>Лучший путь:</span>{' '}
             {bestPath.map((index) => cityNames[index]).join(' -> ')}
           </h2>
-          <h2>Лучшее расстояние: {bestDistance}</h2>
-        </>
+          <h2>
+            <span>Лучшее расстояние:</span> {bestDistance}
+          </h2>
+        </div>
       )}
       {solutionSteps.length > 0 && (
-        <div>
-          <h3>Шаги решения:</h3>
+        <div className='stepDist-div'>
+          <h2>Шаги решения:</h2>
           <ol>
             {solutionSteps.map((step, index) => (
               <li key={index}>
                 <p>
-                  Путь: {step.path.map((index) => cityNames[index]).join(' -> ')}
+                  "{t('Step')} {index + 1}"
+                </p>
+                <p>
+                  Путь:{' '}
+                  {step.path.map((index) => cityNames[index]).join(' -> ')}
                 </p>
                 <p>Расстояние: {step.distance}</p>
               </li>

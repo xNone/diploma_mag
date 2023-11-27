@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const DataTable = ({ data, items, maxWeight }) => {
   const [dataTables, setDataTables] = useState([]);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const tables = [];
@@ -27,10 +29,10 @@ const DataTable = ({ data, items, maxWeight }) => {
       }
 
       const table = (
-        <table key={i}>
+        <table key={i} className='table-div'>
           <thead>
             <tr>
-              <th>Number</th>
+              <th>i</th>
               {Array.from({ length: maxWeight }, (_, index) => (
                 <th key={index}>{index}</th>
               ))}
@@ -46,7 +48,12 @@ const DataTable = ({ data, items, maxWeight }) => {
     setDataTables(tables);
   }, [data, items, maxWeight]);
 
-  return <div>{dataTables}</div>;
+  return (
+    <div className='main-table-div'>
+      <h2>{t('Step-by-step completion of the table:')}</h2>
+      {dataTables}
+    </div>
+  );
 };
 
 export default React.memo(DataTable);

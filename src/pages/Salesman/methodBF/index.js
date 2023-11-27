@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
-// New component for detailed solution
 const DetailedSolution = ({ cityNames, distanceMatrix, bestPath }) => {
   return (
-    <div>
+    <div className='stepDist-div'>
       <h2>Detailed Solution:</h2>
       <table>
         <thead>
@@ -17,8 +17,17 @@ const DetailedSolution = ({ cityNames, distanceMatrix, bestPath }) => {
           {bestPath.map((step, index) => (
             <tr key={index}>
               <td>{index + 1}</td>
-              <td>{bestPath.slice(0, index + 1).map((i) => cityNames[i]).join(' -> ')}</td>
-              <td>{index === bestPath.length - 1 ? 'Total Distance' : distanceMatrix[step][bestPath[index + 1]]}</td>
+              <td>
+                {bestPath
+                  .slice(0, index + 1)
+                  .map((i) => cityNames[i])
+                  .join(' -> ')}
+              </td>
+              <td>
+                {index === bestPath.length - 1
+                  ? 'Total Distance'
+                  : distanceMatrix[step][bestPath[index + 1]]}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -38,10 +47,8 @@ const BruteForceTSP = () => {
   const [bestDistance, setBestDistance] = useState(Number.MAX_VALUE);
   const [isVisible, setIsVisible] = useState(false);
   const [detailedSolutionVisible, setDetailedSolutionVisible] = useState(false);
-
-  useEffect(() => {
-    setDetailedSolutionVisible(true);
-  }, [bestPath]);
+  const [selectedSize, setSelectedSize] = useState('Manual'); // Default size is Manual
+  const { t } = useTranslation();
 
   const addCity = () => {
     if (newCity) {
@@ -61,6 +68,28 @@ const BruteForceTSP = () => {
       updatedMatrix[column][row] = parseInt(newDistance);
       setDistanceMatrix(updatedMatrix);
       setNewDistance('');
+    }
+  };
+
+  const handleSizeChange = (e) => {
+    const size = e.target.value;
+    setSelectedSize(size);
+
+    // Set cityNames and distanceMatrix based on the selected size
+    if (size === 'Manual') {
+      setCityNames([]);
+      setDistanceMatrix([]);
+    } else if (size === 'Small') {
+      setCityNames(['A', 'B', 'C']);
+      setDistanceMatrix([
+        [0, 1, 4],
+        [1, 0, 2],
+        [4, 2, 0],
+      ]);
+    } else if (size === 'Medium') {
+      // Set Medium size data
+    } else if (size === 'Large') {
+      // Set Large size data
     }
   };
 
@@ -88,7 +117,9 @@ const BruteForceTSP = () => {
 
       for (let j = 0; j < matrix[0].length; j++) {
         if (!path.includes(j)) {
-          const column = matrix.map((row) => row[j]).filter((_, i) => !path.includes(i));
+          const column = matrix
+            .map((row) => row[j])
+            .filter((_, i) => !path.includes(i));
           localLowerBound += Math.min(...column);
         }
       }
@@ -124,82 +155,117 @@ const BruteForceTSP = () => {
   const startPath = [0];
 
   const calculateBruteForce = () => {
-    calculatePath(startPath, distanceMatrix, calculateLowerBound(startPath, distanceMatrix));
+    calculatePath(
+      startPath,
+      distanceMatrix,
+      calculateLowerBound(startPath, distanceMatrix)
+    );
+    setDetailedSolutionVisible(true);
   };
 
   return (
     <div>
-      <div>
-        <h3>Добавить город:</h3>
-        <input
-          type='text'
-          placeholder='Название города'
-          value={newCity}
-          onChange={(e) => setNewCity(e.target.value)}
-        />
-        <button onClick={addCity}>Добавить</button>
-      </div>
-      <div>
-        <h3>Добавить расстояние:</h3>
-        <select onChange={(e) => setRow(parseInt(e.target.value))}>
-          {cityNames.map((city, index) => (
-            <option key={index} value={index}>
-              {city}
-            </option>
-          ))}
+      <div className='type-enter-div'>
+        <h2>Выберите размер:</h2>
+        <select onChange={handleSizeChange} value={selectedSize}>
+          <option value='Manual'>Ручной ввод</option>
+          <option value='Small'>Small</option>
+          <option value='Medium'>Medium</option>
+          <option value='Large'>Large</option>
         </select>
-        <select onChange={(e) => setColumn(parseInt(e.target.value))}>
-          {cityNames.map((city, index) => (
-            <option key={index} value={index}>
-              {city}
-            </option>
-          ))}
-        </select>
-        <input
-          type='number'
-          placeholder='Расстояние'
-          value={newDistance}
-          onChange={(e) => setNewDistance(e.target.value)}
-        />
-        <button onClick={addDistance}>Добавить расстояние</button>
       </div>
-      <div>
-        <button onClick={calculateBruteForce}>
-          Рассчитать (Метод грубої сили)
-        </button>
-      </div>
-      {detailedSolutionVisible && <DetailedSolution cityNames={cityNames} distanceMatrix={distanceMatrix} bestPath={bestPath} />}
-      <div>
-        <h3>Матрица расстояний:</h3>
-        <table>
-          <thead>
-            <tr>
-              <th></th>
+      <div className='main-city-div'>
+        <div className='city-div'>
+          <h2>Добавить город:</h2>
+          <input
+            type='text'
+            placeholder='Название города'
+            value={newCity}
+            onChange={(e) => setNewCity(e.target.value)}
+          />
+          <button onClick={addCity}>Добавить</button>
+        </div>
+        <div className='distance-div'>
+          <h2>Добавить расстояние:</h2>
+          <div>
+            <span for='from'> {t('From-label')} </span>
+            <select
+              id='from'
+              onChange={(e) => setRow(parseInt(e.target.value))}
+            >
               {cityNames.map((city, index) => (
-                <th key={index}>{city}</th>
+                <option key={index} value={index}>
+                  {city}
+                </option>
               ))}
-            </tr>
-          </thead>
-          <tbody>
-            {cityNames.map((city, rowIndex) => (
-              <tr key={rowIndex}>
-                <th>{city}</th>
-                {cityNames.map((_, colIndex) => (
-                  <td key={colIndex}>{distanceMatrix[rowIndex][colIndex]}</td>
+            </select>
+            <label for='before'> {t('Before-label')} </label>
+            <select
+              id='before'
+              onChange={(e) => setColumn(parseInt(e.target.value))}
+            >
+              {cityNames.map((city, index) => (
+                <option key={index} value={index}>
+                  {city}
+                </option>
+              ))}
+            </select>
+            <input
+              type='number'
+              placeholder='Расстояние'
+              value={newDistance}
+              onChange={(e) => setNewDistance(e.target.value)}
+            />
+          </div>
+          <button onClick={addDistance}>Добавить расстояние</button>
+        </div>
+      </div>
+      <div className='res-div'>
+        <div className='button-res'>
+          <button onClick={calculateBruteForce}>Рассчитать</button>
+        </div>
+        <div className='matrix-div'>
+          <h2>Матрица расстояний:</h2>
+          <table>
+            <thead>
+              <tr>
+                <th></th>
+                {cityNames.map((city, index) => (
+                  <th key={index}>{city}</th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {cityNames.map((city, rowIndex) => (
+                <tr key={rowIndex}>
+                  <th>{city}</th>
+                  {cityNames.map((_, colIndex) => (
+                    <td key={colIndex}>{distanceMatrix[rowIndex][colIndex]}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
+      {detailedSolutionVisible && (
+        <DetailedSolution
+          cityNames={cityNames}
+          distanceMatrix={distanceMatrix}
+          bestPath={bestPath}
+        />
+      )}
       {isVisible && (
-        <>
+        <div className='bestDist-div'>
+          <h2>Результат:</h2>
           <h2>
-            Лучший путь:{' '}
+            <span>Лучший путь:</span>{' '}
             {bestPath.map((index) => cityNames[index]).join(' -> ')}
           </h2>
-          <h2>Лучшее расстояние: {bestDistance}</h2>
-        </>
+          <h2>
+            <span>Лучшее расстояние:</span> {bestDistance}
+          </h2>
+        </div>
       )}
     </div>
   );

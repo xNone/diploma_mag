@@ -11,8 +11,18 @@ const LanguageSelector = () => {
 
   return (
     <div className="language-selector">
-      <button onClick={() => changeLanguage('en')}>English</button>
-      <button onClick={() => changeLanguage('ua')}>Українська</button>
+      <button
+        onClick={() => changeLanguage('en')}
+        className={i18n.language === 'en' ? 'active-lang' : ''}
+      >
+        English
+      </button>
+      <button
+        onClick={() => changeLanguage('ua')}
+        className={i18n.language === 'ua' ? 'active-lang' : ''}
+      >
+        Українська
+      </button>
     </div>
   );
 };

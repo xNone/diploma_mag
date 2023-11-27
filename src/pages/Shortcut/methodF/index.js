@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
-import { smallVariable, mediumVariable, largeVariable } from '../VariableMatrix';
+import {
+  smallVariable,
+  mediumVariable,
+  largeVariable,
+} from '../VariableMatrix';
+import { useTranslation } from 'react-i18next';
 
 const FloydWarshall = () => {
   const [size, setSize] = useState(2);
@@ -8,6 +13,7 @@ const FloydWarshall = () => {
     ['', ''],
   ]);
   const [solutionSteps, setSolutionSteps] = useState([]);
+  const { t } = useTranslation();
 
   const handleSizeChange = (event) => {
     const newSize = parseInt(event.target.value, 10);
@@ -105,9 +111,9 @@ const FloydWarshall = () => {
         const isPathCell =
           stepNumber === n - 1 && next[i][j] !== j && next[i][j] !== undefined;
 
-        step += `<td style="background-color: ${
-          isChanged ? 'yellow' : isPathCell ? 'lightgreen' : 'white'
-        }">${cellValue === Infinity ? '∞' : cellValue }</td>`;
+        step += `<td style="background: ${
+          isChanged ? '#015958' : isPathCell ? '#90ee9068' : 'none'
+        }">${cellValue === Infinity ? '∞' : cellValue}</td>`;
       }
       step += '</tr>';
     }
@@ -130,40 +136,54 @@ const FloydWarshall = () => {
 
   return (
     <div>
-      <h1>Алгоритм Флойда-Уоршелла</h1>
-      <label>
-        Размер матрицы:
-        <input type='number' min='2' value={size} onChange={handleSizeChange} />
-      </label>
-      <select value={size} onChange={handleSizeChange}>
-        <option value={2}>Обрати</option>
-        <option value={6}>Маленький</option>
-        <option value={10}>Средний</option>
-        <option value={20}>Большой</option>
-      </select>
-      <table>
-        <tbody>
-          {graph.map((row, rowIndex) => (
-            <tr key={rowIndex}>
-              {row.map((value, colIndex) => (
-                <td key={colIndex}>
-                  <input
-                    type='number'
-                    value={value === Infinity ? '' : value}
-                    onChange={(event) =>
-                      handleGraphChange(event, rowIndex, colIndex)
-                    }
-                  />
-                </td>
+      <div className='div-size-matrix'>
+        <div className='enter-size-matrix'>
+          <h2>{t('Выберите матрицу')}</h2>
+          <select value={size} onChange={handleSizeChange}>
+            <option value={2}>Ввести вручную</option>
+            <option value={6}>Small</option>
+            <option value={10}>Medium</option>
+            <option value={20}>Large</option>
+          </select>
+        </div>
+        <div className='size-matrix'>
+          <label>
+            Размер матрицы:
+            <input
+              type='number'
+              min='2'
+              value={size}
+              onChange={handleSizeChange}
+            />
+          </label>
+        </div>
+        <div className='table-matrix'>
+          <table>
+            <tbody>
+              {graph.map((row, rowIndex) => (
+                <tr key={rowIndex}>
+                  {row.map((value, colIndex) => (
+                    <td key={colIndex}>
+                      <input
+                        type='number'
+                        value={value === Infinity ? '' : value}
+                        onChange={(event) =>
+                          handleGraphChange(event, rowIndex, colIndex)
+                        }
+                      />
+                    </td>
+                  ))}
+                </tr>
               ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <button onClick={handleSolveClick}>Решить</button>
+            </tbody>
+          </table>
+          <button onClick={handleSolveClick}>Решить</button>
+        </div>
+      </div>
       <div id='result-container'>
+        <h2>Шаги решения:</h2>
         {solutionSteps.map((step, index) => (
-          <div key={index} dangerouslySetInnerHTML={{ __html: step }} />
+          <div className='res-matrix-div' key={index} dangerouslySetInnerHTML={{ __html: step }} />
         ))}
       </div>
     </div>
