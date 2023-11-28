@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DataTable from './table';
 import {
   Chart as ChartJS,
@@ -10,6 +10,7 @@ import {
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { useTranslation } from 'react-i18next';
+import { sizeItems } from '../VariableMatrix';
 
 function Table({ items }) {
   ChartJS.register(BarElement, Tooltip, Legend, CategoryScale, LinearScale);
@@ -43,25 +44,9 @@ function KnapsackProblem() {
   const [newItemName, setNewItemName] = useState('');
   const [newItemWeight, setNewItemWeight] = useState(0);
   const [newItemValue, setNewItemValue] = useState(0);
-
-  const sizeItems = {
-    Small: [
-      { name: 'A', weight: 6, value: 5 },
-      { name: 'B', weight: 4, value: 3 },
-      { name: 'C', weight: 3, value: 1 },
-      { name: 'D', weight: 2, value: 3 },
-      { name: 'E', weight: 5, value: 6 },
-      // Add more items as needed
-    ],
-    Medium: [
-      { name: 'F', weight: 8, value: 7 },
-      { name: 'G', weight: 5, value: 4 },
-      { name: 'H', weight: 3, value: 2 },
-    ],
-    Large: [
-      // Items for Large size
-    ],
-  };
+  const [dpExecutionTime, setDPExecutionTime] = useState(0);
+  const [dpIterations, setDPIterations] = useState(0);
+  const [memoryUsed, setMemoryUsed] = useState(0);
 
   const addItem = () => {
     if (selectedSize && sizeItems[selectedSize]) {
@@ -86,6 +71,9 @@ function KnapsackProblem() {
   };
 
   const solveKnapsack = () => {
+    const startTime = performance.now();
+    let iterationsCount = 0;
+
     const n = items.length;
     const dp = Array(n + 1)
       .fill(0)
@@ -93,6 +81,7 @@ function KnapsackProblem() {
 
     for (let i = 1; i <= n; i++) {
       for (let w = 0; w <= capacity; w++) {
+        iterationsCount++;
         if (items[i - 1].weight <= w) {
           dp[i][w] = Math.max(
             dp[i - 1][w],
@@ -103,6 +92,14 @@ function KnapsackProblem() {
         }
       }
     }
+
+    const endTime = performance.now();
+    setDPExecutionTime(endTime - startTime);
+    setDPIterations(iterationsCount);
+
+    // Засекаем начальное и конечное значения памяти
+    const startMemory = window.performance.memory.usedJSHeapSize;
+    setMemoryUsed(window.performance.memory.usedJSHeapSize - startMemory);
 
     setMaxValue(dp[n][capacity]);
 
@@ -258,6 +255,12 @@ function KnapsackProblem() {
           />
         </>
       )}
+
+      <div>
+        <div>{t('DP Execution Time')}: {dpExecutionTime} ms</div>
+        <div>{t('DP Iterations')}: {dpIterations}</div>
+        <div>{t('Memory Used')}: {memoryUsed} bytes</div>
+      </div>
 
       <ul className='circles'>
         {[...Array(10)].map((_, index) => (
