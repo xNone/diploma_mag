@@ -37,7 +37,7 @@ const DetailedSolution = ({ cityNames, distanceMatrix, bestPath }) => {
   );
 };
 
-const BruteForceTSP = () => {
+const BruteForceTSP = ({ onDataUpdate }) => {
   const [cityNames, setCityNames] = useState([]);
   const [distanceMatrix, setDistanceMatrix] = useState([]);
   const [newCity, setNewCity] = useState('');
@@ -50,6 +50,10 @@ const BruteForceTSP = () => {
   const [detailedSolutionVisible, setDetailedSolutionVisible] = useState(false);
   const [selectedSize, setSelectedSize] = useState('Manual'); // Default size is Manual
   const { t } = useTranslation();
+  const [dpExecutionTime, setDPExecutionTime] = useState(0);
+  const [dpIterations, setDPIterations] = useState(0);
+  const [memoryUsed, setMemoryUsed] = useState(0);
+  const [startMemory, setStartMemory] = useState(0);
 
   const addCity = () => {
     if (newCity) {
@@ -105,10 +109,12 @@ const BruteForceTSP = () => {
 
   const calculateLowerBound = (path, matrix) => {
     let H = 0;
+    const startTime = performance.now();
+    let iterationsCount = 0;
 
     for (const step of path) {
       let localLowerBound = H;
-
+      iterationsCount++;
       for (let i = 0; i < matrix.length; i++) {
         if (!path.includes(i)) {
           const row = matrix[i].filter((_, j) => !path.includes(j));
@@ -129,6 +135,16 @@ const BruteForceTSP = () => {
     }
 
     setIsVisible(!isVisible);
+
+    const endTime = performance.now();
+    setDPExecutionTime(endTime - startTime);
+    setDPIterations(iterationsCount);
+
+    const endMemory = window.performance.memory.usedJSHeapSize;
+
+    const memoryUsed = (endMemory - startMemory) / (1024 * 1024);
+
+    setMemoryUsed(memoryUsed);
 
     return H;
   };
@@ -156,12 +172,18 @@ const BruteForceTSP = () => {
   const startPath = [0];
 
   const calculateBruteForce = () => {
+    setStartMemory(window.performance.memory.usedJSHeapSize);
+
     calculatePath(
       startPath,
       distanceMatrix,
       calculateLowerBound(startPath, distanceMatrix)
     );
     setDetailedSolutionVisible(true);
+  };
+
+  const handClick = () => {
+    onDataUpdate(dpExecutionTime, dpIterations, memoryUsed);
   };
 
   return (
@@ -224,6 +246,7 @@ const BruteForceTSP = () => {
       <div className='res-div'>
         <div className='button-res'>
           <button onClick={calculateBruteForce}>{t('Result')}</button>
+          <button onClick={handClick}>{t('Compare')}</button>
         </div>
         <ul className='circles'>
           {[...Array(10)].map((_, index) => (
@@ -273,6 +296,17 @@ const BruteForceTSP = () => {
           </h2>
         </div>
       )}
+      <div>
+        <div>
+          {t('Execution time')}: {dpExecutionTime.toFixed(10)} ms
+        </div>
+        <div>
+          {t('Number of iterations')}: {dpIterations}
+        </div>
+        <div>
+          {t('Memory used')}: {memoryUsed.toFixed(4)} MB
+        </div>
+      </div>
     </div>
   );
 };

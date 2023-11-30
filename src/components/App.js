@@ -4,10 +4,13 @@ import Nav from './navigation';
 import Home from '../pages/Home/index';
 import Rucksack from '../pages/Rucksack/index';
 import KnapsackSolver from '../pages/Rucksack/methodGA';
+import CompareRucksack from '../pages/Rucksack/Compare';
 import Salesman from '../pages/Salesman';
 import BruteForceTSP from '../pages/Salesman/methodBF';
+import CompareSalesman from '../pages/Salesman/Compare';
 import ShortcutMethod from '../pages/Shortcut';
 import DijkstraWarshall from '../pages/Shortcut/methodD';
+import CompareShortcut from '../pages/Shortcut/Compare';
 import HungarianMethod from '../pages/Recognition';
 import GeneticAlgorithmAssignment from '../pages/Recognition/methodA';
 
@@ -28,6 +31,10 @@ const router = createBrowserRouter([
             path: 'methodGA',
             element: <KnapsackSolver />,
           },
+          {
+            path: 'compare',
+            element: <CompareRucksack />,
+          },
         ],
       },
       {
@@ -38,6 +45,10 @@ const router = createBrowserRouter([
             path: 'methodBF',
             element: <BruteForceTSP />,
           },
+          {
+            path: 'compare',
+            element: <CompareSalesman />,
+          },
         ],
       },
       {
@@ -47,6 +58,10 @@ const router = createBrowserRouter([
           {
             path: 'methodD',
             element: <DijkstraWarshall />,
+          },
+          {
+            path: 'compare',
+            element: <CompareShortcut />,
           },
         ],
       },

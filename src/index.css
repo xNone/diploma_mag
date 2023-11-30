@@ -413,6 +413,19 @@ body {
   width: 50%;
 }
 
+.table-div .table-div-button {
+  padding: 5px;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  background-color: #015958;
+  border: 1px solid #0fc2c0;
+}
+
+.table-div .table-div-button:hover {
+  background-color: #0a3a40;
+}
+
 .table-div th {
   border: 1px solid #ccc;
   padding: 0 10px;
@@ -943,4 +956,34 @@ body {
   font-weight: bold;
   text-decoration: underline;
   color: #8aa6a3;
+}
+
+.compare-div {
+  display: flex;
+  justify-content: center;
+  margin-top: 50px;
+}
+
+.compare-div table {
+}
+
+.compare-div th,
+.compare-div tr,
+.compare-div td {
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+.compare-div td:first-child {
+  text-align: left;
+}
+
+.compare-div td,
+.compare-div th {
+  text-align: center;
+}
+
+.compare-div tr th:first-child {
+  border-top: 1px solid #0a3a40;
+  border-left: 1px solid #0a3a40;
 }

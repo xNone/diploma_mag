@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-const TravelingSalesman = () => {
+const TravelingSalesman = ({ onDataUpdate }) => {
   const [cityNames, setCityNames] = useState([]);
   const [distanceMatrix, setDistanceMatrix] = useState([]);
   const [newCity, setNewCity] = useState('');
@@ -14,6 +14,11 @@ const TravelingSalesman = () => {
   const [solutionSteps, setSolutionSteps] = useState([]);
   const [selectedSize, setSelectedSize] = useState('');
   const { t } = useTranslation();
+  const [dpExecutionTime, setDPExecutionTime] = useState(0);
+  const [dpIterations, setDPIterations] = useState(0);
+  const [memoryUsed, setMemoryUsed] = useState(0);
+  const [startMemory, setStartMemory] = useState(0);
+
   const addCity = () => {
     if (newCity) {
       setCityNames([...cityNames, newCity]);
@@ -55,6 +60,9 @@ const TravelingSalesman = () => {
   };
 
   const calculatePath = (path, matrix, lowerBound) => {
+    const startTime = performance.now();
+    let iterationsCount = 0;
+
     if (path.length === cityNames.length) {
       const distance = calculateDistance(path, matrix);
       if (distance < bestDistance) {
@@ -63,6 +71,7 @@ const TravelingSalesman = () => {
       }
     } else {
       for (let i = 0; i < cityNames.length; i++) {
+        iterationsCount++;
         if (!path.includes(i)) {
           const newPath = [...path, i];
           const newLowerBound = calculateLowerBound(newPath, matrix);
@@ -72,6 +81,16 @@ const TravelingSalesman = () => {
         }
       }
     }
+
+    const endTime = performance.now();
+    setDPExecutionTime(endTime - startTime);
+    setDPIterations(iterationsCount);
+
+    const endMemory = window.performance.memory.usedJSHeapSize;
+
+    const memoryUsed = (endMemory - startMemory) / (1024 * 1024);
+
+    setMemoryUsed(memoryUsed);
   };
 
   const calculateDistance = (path, matrix) => {
@@ -113,6 +132,8 @@ const TravelingSalesman = () => {
   };
 
   const handleCalculate = () => {
+    setStartMemory(window.performance.memory.usedJSHeapSize);
+
     const initialLowerBound = calculateLowerBound([0], distanceMatrix);
     calculatePath([0], distanceMatrix, initialLowerBound);
   };
@@ -143,6 +164,10 @@ const TravelingSalesman = () => {
         }
       }
     }
+  };
+
+  const handClick = () => {
+    onDataUpdate(dpExecutionTime, dpIterations, memoryUsed);
   };
 
   return (
@@ -206,6 +231,7 @@ const TravelingSalesman = () => {
         <div className='button-res'>
           <button onClick={handleCalculate}>{t('Result')}</button>
           <button onClick={handleShowSteps}>{t('Show steps')}</button>
+          <button onClick={handClick}>{t('Compare')}</button>
         </div>
         <ul className='circles'>
           {[...Array(10)].map((_, index) => (
@@ -261,12 +287,26 @@ const TravelingSalesman = () => {
                   {t('The Path:')}{' '}
                   {step.path.map((index) => cityNames[index]).join(' -> ')}
                 </p>
-                <p>{t('Distance')}: {step.distance}</p>
+                <p>
+                  {t('Distance')}: {step.distance}
+                </p>
               </li>
             ))}
           </ol>
         </div>
       )}
+
+      <div>
+        <div>
+          {t('Execution time')}: {dpExecutionTime.toFixed(10)} ms
+        </div>
+        <div>
+          {t('Number of iterations')}: {dpIterations}
+        </div>
+        <div>
+          {t('Memory used')}: {memoryUsed.toFixed(4)} MB
+        </div>
+      </div>
     </div>
   );
 };

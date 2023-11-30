@@ -52,5 +52,11 @@
   "Select a matrix": "Виберіть матрицю",
   "Matrix size": "Розмір матриці",
   "Graph": "Граф",
-  "Solution": "Рішення"
+  "Solution": "Рішення",
+  "Hide table": "Приховати таблицю",
+  "Show table": "Показати таблицю",
+  "Compare": "Порівняння",
+  "Execution time": "Час виконання",
+  "Number of iterations": "Кількість ітерацій",
+  "Memory used": "Використана пам'ять"
 }

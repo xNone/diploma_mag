@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DataTable from '../methodDP/table';
 import {
   Chart as ChartJS,
@@ -10,6 +10,7 @@ import {
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { useTranslation } from 'react-i18next';
+import { sizeItems } from '../VariableMatrix';
 
 function StepByStepTable({ steps }) {
   const { t } = useTranslation();
@@ -42,7 +43,7 @@ function StepByStepTable({ steps }) {
   );
 }
 
-function KnapsackSolver() {
+function KnapsackSolver({ onDataUpdate }) {
   ChartJS.register(BarElement, Tooltip, Legend, CategoryScale, LinearScale);
 
   const [items, setItems] = useState([]);
@@ -57,29 +58,15 @@ function KnapsackSolver() {
   const [coordinates, setCoordinates] = useState([]);
   const [stepByStep, setStepByStep] = useState([]);
   const [presetSize, setPresetSize] = useState('Custom');
+  const [dpExecutionTime, setDPExecutionTime] = useState(0);
+  const [dpIterations, setDPIterations] = useState(0);
+  const [memoryUsed, setMemoryUsed] = useState(0);
+  const [startMemory, setStartMemory] = useState(0);
+  const [isTableVisible, setIsTableVisible] = useState(true);
   const { t } = useTranslation();
-  const presetSizes = {
-    Custom: { name: 'Custom', weight: 0, value: 0 },
-    Small: [
-      { name: 'A', weight: 6, value: 5 },
-      { name: 'B', weight: 4, value: 3 },
-      { name: 'C', weight: 3, value: 1 },
-      { name: 'D', weight: 2, value: 3 },
-      { name: 'E', weight: 5, value: 6 },
-      // Add more items as needed
-    ],
-    Medium: [
-      { name: 'F', weight: 8, value: 7 },
-      { name: 'G', weight: 5, value: 4 },
-      { name: 'H', weight: 3, value: 2 },
-      // Add more items as needed
-    ],
-    Large: [
-      { name: 'I', weight: 10, value: 9 },
-      { name: 'J', weight: 7, value: 5 },
-      { name: 'K', weight: 4, value: 3 },
-      // Add more items as needed
-    ],
+
+  const toggleTableVisibility = () => {
+    setIsTableVisible(!isTableVisible);
   };
 
   const handlePresetSizeChange = (size) => {
@@ -90,8 +77,7 @@ function KnapsackSolver() {
       setNewItemValue(0);
     } else {
       // Set default values for selected preset size
-      const defaultItem = presetSizes[size];
-      console.log('defaultItem', defaultItem);
+      const defaultItem = sizeItems[size];
       setItems(defaultItem);
     }
   };
@@ -113,6 +99,8 @@ function KnapsackSolver() {
   };
 
   const solveKnapsackGreedy = () => {
+    setStartMemory(window.performance.memory.usedJSHeapSize);
+
     const sortedItems = items
       .slice()
       .sort((a, b) => b.value / b.weight - a.value / a.weight);
@@ -124,8 +112,12 @@ function KnapsackSolver() {
     let coordinates = [];
     let stepByStepData = [];
 
+    const startTime = performance.now();
+    let iterationsCount = 0;
+
     for (let item of sortedItems) {
       if (item.weight <= remainingCapacity) {
+        iterationsCount++;
         selectedItems.push(item);
         remainingCapacity -= item.weight;
         totalWeight += item.weight;
@@ -149,6 +141,22 @@ function KnapsackSolver() {
     setShowDataTable(true);
     setCoordinates(coordinates);
     setStepByStep(stepByStepData);
+
+    const endTime = performance.now();
+    setDPExecutionTime(endTime - startTime);
+    setDPIterations(iterationsCount);
+
+    if (items.length > 0) {
+      const endMemory = window.performance.memory.usedJSHeapSize;
+
+      const memoryUsed = (endMemory - startMemory) / (1024 * 1024);
+
+      setMemoryUsed(memoryUsed);
+    }
+  };
+
+  const handClick = () => {
+    onDataUpdate(dpExecutionTime, dpIterations, memoryUsed);
   };
 
   return (
@@ -201,28 +209,35 @@ function KnapsackSolver() {
         </div>
         <div className='table-div'>
           <h2>{t('Added items')}</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>{t('Title')}</th>
-                <th>{t('Weight')}</th>
-                <th>{t('Value')}</th>
-                <th>{t('Actions')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item, index) => (
-                <tr key={index}>
-                  <td>{item.name}</td>
-                  <td>{item.weight}</td>
-                  <td>{item.value}</td>
-                  <td>
-                    <button onClick={() => removeItem(index)}>{t('Delete')}</button>
-                  </td>
+          <button className='table-div-button' onClick={toggleTableVisibility}>
+            {isTableVisible ? t('Hide table') : t('Show table')}
+          </button>
+          {isTableVisible && (
+            <table>
+              <thead>
+                <tr>
+                  <th>{t('Title')}</th>
+                  <th>{t('Weight')}</th>
+                  <th>{t('Value')}</th>
+                  <th>{t('Actions')}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {items.map((item, index) => (
+                  <tr key={index}>
+                    <td>{item.name}</td>
+                    <td>{item.weight}</td>
+                    <td>{item.value}</td>
+                    <td>
+                      <button onClick={() => removeItem(index)}>
+                        {t('Delete')}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
       <div className='enter-weight-div'>
@@ -233,20 +248,27 @@ function KnapsackSolver() {
           onChange={(e) => setCapacity(Number(e.target.value))}
         />
         <button onClick={solveKnapsackGreedy}>{t('Result')}</button>
+        <button onClick={handClick}>{t('Compare')}</button>
       </div>
       {showDataTable && (
         <>
           <div>
             <h2>{t('Solution')}</h2>
-            <p>{t('Maximum weight of the backpack:')} {maxWeight}</p>
-            <p>{t('Maximum value:')} {maxValue}</p>
+            <p>
+              {t('Maximum weight of the backpack:')} {maxWeight}
+            </p>
+            <p>
+              {t('Maximum value:')} {maxValue}
+            </p>
           </div>
           <DataTable items={selectedItems} />
           <StepByStepTable steps={stepByStep} />
 
           <Bar
             data={{
-              labels: coordinates.map((coord, index) => `${t('Step')} ${index + 1}`),
+              labels: coordinates.map(
+                (coord, index) => `${t('Step')} ${index + 1}`
+              ),
               datasets: [
                 {
                   label: t('Backpack weight'),
@@ -277,6 +299,19 @@ function KnapsackSolver() {
           />
         </>
       )}
+
+      <div>
+        <div>
+          {t('Execution time')}: {dpExecutionTime.toFixed(10)} ms
+        </div>
+        <div>
+          {t('Number of iterations')}: {dpIterations}
+        </div>
+        <div>
+          {t('Memory Used')}: {memoryUsed.toFixed(4)} MB
+        </div>
+      </div>
+
       <ul className='circles'>
         {[...Array(10)].map((_, index) => (
           <li key={index}></li>

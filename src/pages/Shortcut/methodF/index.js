@@ -3,10 +3,11 @@ import {
   smallVariable,
   mediumVariable,
   largeVariable,
+  firstVariable,
 } from '../VariableMatrix';
 import { useTranslation } from 'react-i18next';
 
-const FloydWarshall = () => {
+const FloydWarshall = ({ onDataUpdate }) => {
   const [size, setSize] = useState(2);
   const [graph, setGraph] = useState([
     ['', ''],
@@ -14,6 +15,10 @@ const FloydWarshall = () => {
   ]);
   const [solutionSteps, setSolutionSteps] = useState([]);
   const { t } = useTranslation();
+  const [dpExecutionTime, setDPExecutionTime] = useState(0);
+  const [dpIterations, setDPIterations] = useState(0);
+  const [memoryUsed, setMemoryUsed] = useState(0);
+  const [startMemory, setStartMemory] = useState(0);
 
   const handleSizeChange = (event) => {
     const newSize = parseInt(event.target.value, 10);
@@ -21,6 +26,9 @@ const FloydWarshall = () => {
     setSize(newSize);
 
     switch (newSize) {
+      case 4:
+        setGraph(firstVariable);
+        break;
       case 6:
         setGraph(smallVariable);
         break;
@@ -50,6 +58,10 @@ const FloydWarshall = () => {
   };
 
   const handleSolveClick = () => {
+    setStartMemory(window.performance.memory.usedJSHeapSize);
+    const startTime = performance.now();
+    let iterationsCount = 0;
+
     const n = size;
     const dist = [];
     const next = [];
@@ -72,6 +84,8 @@ const FloydWarshall = () => {
 
       for (let i = 0; i < n; i++) {
         for (let j = 0; j < n; j++) {
+          iterationsCount++;
+
           if (dist[i][k] + dist[k][j] < dist[i][j]) {
             dist[i][j] = dist[i][k] + dist[k][j];
             next[i][j] = next[i][k];
@@ -82,6 +96,16 @@ const FloydWarshall = () => {
 
     // Вывод результата в DOM
     setSolutionSteps(steps);
+
+    const endTime = performance.now();
+    setDPExecutionTime(endTime - startTime);
+    setDPIterations(iterationsCount);
+
+    const endMemory = window.performance.memory.usedJSHeapSize;
+
+    const memoryUsed = (endMemory - startMemory) / (1024 * 1024);
+
+    setMemoryUsed(memoryUsed);
   };
 
   const generateStep = (dist, next, stepNumber) => {
@@ -134,6 +158,10 @@ const FloydWarshall = () => {
     return defaultGraph;
   };
 
+  const handClick = () => {
+    onDataUpdate(dpExecutionTime, dpIterations, memoryUsed);
+  };
+
   return (
     <div>
       <div className='div-size-matrix'>
@@ -141,6 +169,7 @@ const FloydWarshall = () => {
           <h2>{t('Select a matrix')}</h2>
           <select value={size} onChange={handleSizeChange}>
             <option value={2}>{t('Manual Entry')}</option>
+            <option value={4}>{t('First')}</option>
             <option value={6}>{t('Small')}</option>
             <option value={10}>{t('Medium')}</option>
             <option value={20}>{t('Large')}</option>
@@ -178,6 +207,7 @@ const FloydWarshall = () => {
             </tbody>
           </table>
           <button onClick={handleSolveClick}>{t('Result')}</button>
+          <button onClick={handClick}>{t('Compare')}</button>
         </div>
       </div>
       <ul className='circles'>

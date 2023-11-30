@@ -30,7 +30,7 @@ function Table({ items }) {
   );
 }
 
-function KnapsackProblem() {
+function KnapsackProblem({ onDataUpdate }) {
   ChartJS.register(BarElement, Tooltip, Legend, CategoryScale, LinearScale);
   const { t } = useTranslation();
   const [items, setItems] = useState([]);
@@ -47,6 +47,25 @@ function KnapsackProblem() {
   const [dpExecutionTime, setDPExecutionTime] = useState(0);
   const [dpIterations, setDPIterations] = useState(0);
   const [memoryUsed, setMemoryUsed] = useState(0);
+  const [startMemory, setStartMemory] = useState(0);
+  const [isTableVisible, setIsTableVisible] = useState(true);
+
+  const toggleTableVisibility = () => {
+    setIsTableVisible(!isTableVisible);
+  };
+
+  const handlePresetSizeChange = (size) => {
+    setSelectedSize(size);
+    if (size === 'Custom') {
+      setNewItemName('');
+      setNewItemWeight(0);
+      setNewItemValue(0);
+    } else {
+      // Set default values for selected preset size
+      const defaultItem = sizeItems[size];
+      setItems(defaultItem);
+    }
+  };
 
   const addItem = () => {
     if (selectedSize && sizeItems[selectedSize]) {
@@ -71,6 +90,8 @@ function KnapsackProblem() {
   };
 
   const solveKnapsack = () => {
+    setStartMemory(window.performance.memory.usedJSHeapSize);
+
     const startTime = performance.now();
     let iterationsCount = 0;
 
@@ -92,14 +113,6 @@ function KnapsackProblem() {
         }
       }
     }
-
-    const endTime = performance.now();
-    setDPExecutionTime(endTime - startTime);
-    setDPIterations(iterationsCount);
-
-    // Засекаем начальное и конечное значения памяти
-    const startMemory = window.performance.memory.usedJSHeapSize;
-    setMemoryUsed(window.performance.memory.usedJSHeapSize - startMemory);
 
     setMaxValue(dp[n][capacity]);
 
@@ -127,6 +140,22 @@ function KnapsackProblem() {
     setMaxWeight(capacity - w);
     setSelectedItems(selected);
     setShowDataTable(true);
+
+    const endTime = performance.now();
+    setDPExecutionTime(endTime - startTime);
+    setDPIterations(iterationsCount);
+
+    if (items.length > 0) {
+      const endMemory = window.performance.memory.usedJSHeapSize;
+
+      const memoryUsed = (endMemory - startMemory) / (1024 * 1024);
+
+      setMemoryUsed(memoryUsed);
+    }
+  };
+
+  const handClick = () => {
+    onDataUpdate(dpExecutionTime, dpIterations, memoryUsed);
   };
 
   return (
@@ -140,18 +169,15 @@ function KnapsackProblem() {
               id='selectSize'
               value={selectedSize}
               onChange={(e) => {
-                setSelectedSize(e.target.value);
-                setNewItemName('');
-                setNewItemWeight(0);
-                setNewItemValue(0);
+                handlePresetSizeChange(e.target.value);
               }}
             >
-              <option value=''>{t('Manual Entry')}</option>
+              <option value='Custom'>{t('Manual Entry')}</option>
               <option value='Small'>{t('Small')}</option>
               <option value='Medium'>{t('Medium')}</option>
               <option value='Large'>{t('Large')}</option>
             </select>
-            {selectedSize === '' && (
+            {selectedSize === 'Custom' && (
               <div className='entr-custom-div'>
                 <label htmlFor='titleDP'>{t('Title')}</label>
                 <input
@@ -185,30 +211,36 @@ function KnapsackProblem() {
 
         <div className='table-div'>
           <h2>{t('Added items')}</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>{t('Title')}</th>
-                <th>{t('Weight')}</th>
-                <th>{t('Value')}</th>
-                <th>{t('Actions')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item, index) => (
-                <tr key={index}>
-                  <td>{item.name}</td>
-                  <td>{item.weight}</td>
-                  <td>{item.value}</td>
-                  <td>
-                    <button onClick={() => removeItem(index)}>
-                      {t('Delete')}
-                    </button>
-                  </td>
+          <button className='table-div-button' onClick={toggleTableVisibility}>
+            {isTableVisible ? t('Hide table') : t('Show table')}
+          </button>
+
+          {isTableVisible && (
+            <table>
+              <thead>
+                <tr>
+                  <th>{t('Title')}</th>
+                  <th>{t('Weight')}</th>
+                  <th>{t('Value')}</th>
+                  <th>{t('Actions')}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {items.map((item, index) => (
+                  <tr key={index}>
+                    <td>{item.name}</td>
+                    <td>{item.weight}</td>
+                    <td>{item.value}</td>
+                    <td>
+                      <button onClick={() => removeItem(index)}>
+                        {t('Delete')}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
       <div className='enter-weight-div'>
@@ -219,6 +251,7 @@ function KnapsackProblem() {
           onChange={(e) => setCapacity(Number(e.target.value))}
         />
         <button onClick={solveKnapsack}>{t('Result')}</button>
+        <button onClick={handClick}>{t('Compare')}</button>
       </div>
 
       {showDataTable && (
@@ -257,9 +290,15 @@ function KnapsackProblem() {
       )}
 
       <div>
-        <div>{t('DP Execution Time')}: {dpExecutionTime} ms</div>
-        <div>{t('DP Iterations')}: {dpIterations}</div>
-        <div>{t('Memory Used')}: {memoryUsed} bytes</div>
+        <div>
+          {t('Execution time')}: {dpExecutionTime.toFixed(10)} ms
+        </div>
+        <div>
+          {t('Number of iterations')}: {dpIterations}
+        </div>
+        <div>
+          {t('Memory used')}: {memoryUsed.toFixed(4)} MB
+        </div>
       </div>
 
       <ul className='circles'>

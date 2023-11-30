@@ -53,5 +53,11 @@
   "Select a matrix": "Select a matrix",
   "Matrix size": "Matrix size",
   "Graph": "Graph",
-  "Solution": "Solution"
+  "Solution": "Solution",
+  "Hide table": "Hide table",
+  "Show table": "Show table",
+  "Compare": "Compare",
+  "Execution time": "Execution time",
+  "Number of iterations": "Number of iterations",
+  "Memory used": "Memory used"
 }
