@@ -1,0 +1,31 @@
+    [0, 1, 6, Infinity],
+    [Infinity, 0, 4, 1],
+    [Infinity, Infinity, 0, Infinity],
+    [Infinity, Infinity, 1, 0],
+
+    [
+        [0, Infinity, -2, Infinity],
+        [4, 0, 3, Infinity],
+        [Infinity, Infinity, 0, 2],
+        [Infinity, -1, Infinity, 0],
+    ]
+
+    [
+    [0, 2, Infinity, 3, 1, Infinity, Infinity, 10],
+    [2, 0, 4, Infinity, Infinity, Infinity, Infinity, Infinity],
+    [Infinity, 4, 0, Infinity, Infinity, Infinity, Infinity, 3],
+    [3, Infinity, Infinity, 0, Infinity, Infinity, Infinity, 8],
+    [1, Infinity, Infinity, Infinity, 0, 2, Infinity, Infinity],
+    [Infinity, Infinity, Infinity, Infinity, 2, 0, 3, Infinity],
+    [Infinity, Infinity, Infinity, Infinity, Infinity, 3, 0, 1],
+    [10, Infinity, 3, 8, Infinity, Infinity, 1, 0]
+]
+
+[
+    [0, 7, 9, Infinity, Infinity, 14],
+    [7, 0, 10, 15, Infinity, Infinity],
+    [9, 10, 0, 11, Infinity, 2],
+    [Infinity, 15, 11, 0, 6, Infinity],
+    [Infinity, Infinity, Infinity, 6, 0, 9],
+    [14, Infinity, 2, Infinity, 9, 0],
+]

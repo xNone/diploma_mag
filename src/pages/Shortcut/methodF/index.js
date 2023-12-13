@@ -1,232 +1,217 @@
 import React, { useState } from 'react';
-import {
-  smallVariable,
-  mediumVariable,
-  largeVariable,
-  firstVariable,
-} from '../VariableMatrix';
 import { useTranslation } from 'react-i18next';
 
-const FloydWarshall = ({ onDataUpdate }) => {
-  const [size, setSize] = useState(2);
-  const [graph, setGraph] = useState([
-    ['', ''],
-    ['', ''],
-  ]);
-  const [solutionSteps, setSolutionSteps] = useState([]);
-  const { t } = useTranslation();
-  const [dpExecutionTime, setDPExecutionTime] = useState(0);
-  const [dpIterations, setDPIterations] = useState(0);
-  const [memoryUsed, setMemoryUsed] = useState(0);
-  const [startMemory, setStartMemory] = useState(0);
+function floydWarshall(graph) {
+  const V = graph.length;
+  let dist = [];
+  let next = [];
 
-  const handleSizeChange = (event) => {
-    const newSize = parseInt(event.target.value, 10);
-
-    setSize(newSize);
-
-    switch (newSize) {
-      case 4:
-        setGraph(firstVariable);
-        break;
-      case 6:
-        setGraph(smallVariable);
-        break;
-      case 10:
-        setGraph(mediumVariable);
-        break;
-      case 20:
-        setGraph(largeVariable);
-        break;
-      default:
-        setGraph(createDefaultGraph(newSize));
-    }
-
-    setSolutionSteps([]);
-  };
-
-  const handleGraphChange = (event, rowIndex, colIndex) => {
-    const newValue =
-      event.target.value === '' ? Infinity : parseInt(event.target.value, 10);
-    const newGraph = graph.map((row, rIndex) =>
-      row.map((value, cIndex) =>
-        rIndex === rowIndex && cIndex === colIndex ? newValue : value
-      )
-    );
-    setGraph(newGraph);
-    setSolutionSteps([]);
-  };
-
-  const handleSolveClick = () => {
-    setStartMemory(window.performance.memory.usedJSHeapSize);
-    const startTime = performance.now();
-    let iterationsCount = 0;
-
-    const n = size;
-    const dist = [];
-    const next = [];
-
-    // Инициализация матрицы расстояний и матрицы "следующих" вершин
-    for (let i = 0; i < n; i++) {
-      dist[i] = [];
-      next[i] = [];
-      for (let j = 0; j < n; j++) {
-        dist[i][j] = graph[i][j];
+  // Initialize dist and next matrices
+  for (let i = 0; i < V; i++) {
+    dist[i] = [];
+    next[i] = [];
+    for (let j = 0; j < V; j++) {
+      dist[i][j] = graph[i][j];
+      if (i !== j && graph[i][j] < Infinity) {
         next[i][j] = j;
+      } else {
+        next[i][j] = null;
       }
     }
+  }
 
-    const steps = [];
-
-    // Алгоритм Флойда-Уоршелла
-    for (let k = 0; k < n; k++) {
-      steps.push(generateStep(dist, next, k));
-
-      for (let i = 0; i < n; i++) {
-        for (let j = 0; j < n; j++) {
-          iterationsCount++;
-
-          if (dist[i][k] + dist[k][j] < dist[i][j]) {
-            dist[i][j] = dist[i][k] + dist[k][j];
-            next[i][j] = next[i][k];
-          }
+  // Floyd-Warshall algorithm
+  for (let k = 0; k < V; k++) {
+    for (let i = 0; i < V; i++) {
+      for (let j = 0; j < V; j++) {
+        if (dist[i][j] > dist[i][k] + dist[k][j]) {
+          dist[i][j] = dist[i][k] + dist[k][j];
+          next[i][j] = next[i][k];
         }
       }
     }
+  }
 
-    // Вывод результата в DOM
-    setSolutionSteps(steps);
+  return { dist, next };
+}
 
-    const endTime = performance.now();
-    setDPExecutionTime(endTime - startTime);
-    setDPIterations(iterationsCount);
+function reconstructPath(u, v, next) {
+  if (next[u][v] === null) {
+    return [];
+  }
 
-    const endMemory = window.performance.memory.usedJSHeapSize;
+  let pathArray = [u];
+  while (u !== v) {
+    u = next[u][v];
+    pathArray.push(u);
+  }
 
-    const memoryUsed = (endMemory - startMemory) / (1024 * 1024);
+  return pathArray;
+}
 
-    setMemoryUsed(memoryUsed);
+function FloydWarshallVisualizer() {
+  const [customSize, setCustomSize] = useState(4);
+  const [matrixSize, setMatrixSize] = useState('Custom');
+  const [matrixData, setMatrixData] = useState([
+    ['', '', '', ''],
+    ['', '', '', ''],
+    ['', '', '', ''],
+    ['', '', '', ''],
+  ]);
+  const [startVertex, setStartVertex] = useState(0);
+  const [endVertex, setEndVertex] = useState(7);
+  const [shortestPath, setShortestPath] = useState([]);
+  const [dist, setDist] = useState([]);
+  const { t } = useTranslation();
+
+  const predefinedMatrices = {
+    Small: [
+      [0, 2, Infinity, 3, 1, Infinity, Infinity, 10],
+      [2, 0, 4, Infinity, Infinity, Infinity, Infinity, Infinity],
+      [Infinity, 4, 0, Infinity, Infinity, Infinity, Infinity, 3],
+      [3, Infinity, Infinity, 0, Infinity, Infinity, Infinity, 8],
+      [1, Infinity, Infinity, Infinity, 0, 2, Infinity, Infinity],
+      [Infinity, Infinity, Infinity, Infinity, 2, 0, 3, Infinity],
+      [Infinity, Infinity, Infinity, Infinity, Infinity, 3, 0, 1],
+      [10, Infinity, 3, 8, Infinity, Infinity, 1, 0],
+    ],
+    Medium: [
+      [0, Infinity, -2, Infinity],
+      [4, 0, 3, Infinity],
+      [Infinity, Infinity, 0, 2],
+      [Infinity, -1, Infinity, 0],
+    ],
+    Large: [
+      [0, 7, 9, Infinity, Infinity, 14],
+      [7, 0, 10, 15, Infinity, Infinity],
+      [9, 10, 0, 11, Infinity, 2],
+      [Infinity, 15, 11, 0, 6, Infinity],
+      [Infinity, Infinity, Infinity, 6, 0, 9],
+      [14, Infinity, 2, Infinity, 9, 0],
+    ],
   };
 
-  const generateStep = (dist, next, stepNumber) => {
-    const n = dist.length;
+  const handleMatrixSizeChange = (e) => {
+    const size = e.target.value;
+    setMatrixSize(size);
 
-    let step = `<h3>${t('Step')} ${stepNumber + 1}</h3>`;
-    step += '<table border="1"><thead><tr><th></th>';
+    if (size === 'Custom') {
+      const newSize = customSize || 4;
+      setCustomSize(newSize);
 
-    // Заголовки столбцов
-    for (let i = 0; i < n; i++) {
-      step += `<th>${i + 1}</th>`;
+      const newMatrix = new Array(newSize)
+        .fill(0)
+        .map(() => new Array(newSize).fill(Infinity));
+      setMatrixData(newMatrix);
+    } else {
+      const newMatrix = predefinedMatrices[size];
+      setCustomSize(newMatrix.length);
+      setMatrixData(newMatrix);
     }
-
-    step += '</tr></thead><tbody>';
-
-    // Заполнение таблицы
-    for (let i = 0; i < n; i++) {
-      step += `<tr><th>${i + 1}</th>`;
-      for (let j = 0; j < n; j++) {
-        let cellValue = dist[i][j];
-
-        const isChanged =
-          stepNumber < n - 1 &&
-          (cellValue !== graph[i][j] || cellValue !== dist[i][j - 1]);
-
-        // Проверяем, является ли текущая ячейка частью пути
-        const isPathCell =
-          stepNumber === n - 1 && next[i][j] !== j && next[i][j] !== undefined;
-
-        step += `<td style="background: ${
-          isChanged ? '#015958' : isPathCell ? '#90ee9068' : 'none'
-        }">${cellValue === Infinity ? '∞' : cellValue}</td>`;
-      }
-      step += '</tr>';
-    }
-
-    step += '</tbody></table>';
-
-    return step;
   };
 
-  const createDefaultGraph = (size) => {
-    const defaultGraph = [];
-    for (let i = 0; i < size; i++) {
-      defaultGraph[i] = [];
-      for (let j = 0; j < size; j++) {
-        defaultGraph[i][j] = i === j ? 0 : Infinity;
-      }
-    }
-    return defaultGraph;
+  const handleCustomSizeChange = (e) => {
+    const size = parseInt(e.target.value, 10);
+    setCustomSize(size);
+    console.log('e.target.value', e.target.value);
+    const newMatrix = new Array(size)
+      .fill(0)
+      .map(() => new Array(size).fill(Infinity));
+    setMatrixData(newMatrix);
   };
 
-  const handClick = () => {
-    onDataUpdate(dpExecutionTime, dpIterations, memoryUsed);
+  const handleMatrixValueChange = (i, j, e) => {
+    const value = parseInt(e.target.value, 10);
+    const newData = [...matrixData];
+    newData[i][j] = value;
+    setMatrixData(newData);
+  };
+
+  const findShortestPath = () => {
+    const { dist, next } = floydWarshall(matrixData);
+    setDist(dist);
+
+    const path = reconstructPath(startVertex, endVertex, next);
+    setShortestPath(path);
   };
 
   return (
     <div>
       <div className='div-size-matrix'>
-        <div className='enter-size-matrix'>
-          <h2>{t('Select a matrix')}</h2>
-          <select value={size} onChange={handleSizeChange}>
-            <option value={2}>{t('Manual Entry')}</option>
-            <option value={4}>{t('First')}</option>
-            <option value={6}>{t('Small')}</option>
-            <option value={10}>{t('Medium')}</option>
-            <option value={20}>{t('Large')}</option>
-          </select>
-        </div>
+        <h2>{t('Select a matrix')}</h2>
+        <select value={matrixSize} onChange={handleMatrixSizeChange}>
+          <option value='Custom'>Custom</option>
+          <option value='Small'>Small</option>
+          <option value='Medium'>Medium</option>
+          <option value='Large'>Large</option>
+        </select>
         <div className='size-matrix'>
-          <label>
-            {t('Matrix size')}
+          {matrixSize === 'Custom' && (
+            <label>
+              {t('Matrix size')}
+              <input
+                type='number'
+                value={customSize}
+                onChange={handleCustomSizeChange}
+                min='2'
+              />
+            </label>
+          )}
+          <div className='size-matrix-div'>
+            <label>{t('Start Vertex:')}</label>
             <input
               type='number'
-              min='2'
-              value={size}
-              onChange={handleSizeChange}
+              value={startVertex}
+              onChange={(e) => setStartVertex(Number(e.target.value))}
             />
-          </label>
-        </div>
-        <div className='table-matrix'>
-          <table>
-            <tbody>
-              {graph.map((row, rowIndex) => (
-                <tr key={rowIndex}>
-                  {row.map((value, colIndex) => (
-                    <td key={colIndex}>
-                      <input
-                        type='number'
-                        value={value === Infinity ? '' : value}
-                        onChange={(event) =>
-                          handleGraphChange(event, rowIndex, colIndex)
-                        }
-                      />
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <button onClick={handleSolveClick}>{t('Result')}</button>
-          <button onClick={handClick}>{t('Compare')}</button>
+            <label>{t('End Vertex:')}</label>
+            <input
+              type='number'
+              value={endVertex}
+              onChange={(e) => setEndVertex(Number(e.target.value))}
+            />
+          </div>
         </div>
       </div>
-      <ul className='circles'>
-        {[...Array(10)].map((_, index) => (
-          <li key={index}></li>
-        ))}
-      </ul>
-      <div id='result-container'>
-        <h2>{t('Solution Steps:')}</h2>
-        {solutionSteps.map((step, index) => (
-          <div
-            className='res-matrix-div'
-            key={index}
-            dangerouslySetInnerHTML={{ __html: step }}
-          />
-        ))}
+      <div className='table-matrix'>
+        <h2>{t('Enter the matrix of weights of the edges:')}</h2>
+        <table>
+          <tbody>
+            {matrixData.map((row, i) => (
+              <tr key={i}>
+                {row.map((value, j) => (
+                  <td key={j}>
+                    <input
+                      type='number'
+                      value={value === Infinity ? '' : value}
+                      onChange={(e) => handleMatrixValueChange(i, j, e)}
+                    />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <button onClick={findShortestPath}>{t('Result')}</button>
+      </div>
+      <div>
+        {dist &&
+          dist[startVertex] &&
+          dist[startVertex][endVertex] !== undefined && (
+            <h2 className='h2-style'>
+              {t('Shortest distance from')} <span>{startVertex}</span> {t('to')} {' '}
+              <span>{endVertex}</span>
+            </h2>
+          )}
+        {shortestPath.length > 0 && (
+          <div>
+            <h2 className='h2-style'>{t('Shortest path:')}</h2>
+            {shortestPath.join(' -> ')}
+          </div>
+        )}
       </div>
     </div>
   );
-};
+}
 
-export default FloydWarshall;
+export default FloydWarshallVisualizer;

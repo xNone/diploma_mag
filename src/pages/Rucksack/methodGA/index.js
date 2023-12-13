@@ -16,7 +16,7 @@ function StepByStepTable({ steps }) {
   const { t } = useTranslation();
 
   return (
-    <div>
+    <div className='table-div'>
       <table>
         <thead>
           <tr>
@@ -64,6 +64,7 @@ function KnapsackSolver({ onDataUpdate }) {
   const [startMemory, setStartMemory] = useState(0);
   const [isTableVisible, setIsTableVisible] = useState(true);
   const { t } = useTranslation();
+  const [isCompareVisible, setIsCompareVisible] = useState(false);
 
   const toggleTableVisibility = () => {
     setIsTableVisible(!isTableVisible);
@@ -157,6 +158,7 @@ function KnapsackSolver({ onDataUpdate }) {
 
   const handClick = () => {
     onDataUpdate(dpExecutionTime, dpIterations, memoryUsed);
+    setIsCompareVisible(true);
   };
 
   return (
@@ -252,16 +254,15 @@ function KnapsackSolver({ onDataUpdate }) {
       </div>
       {showDataTable && (
         <>
-          <div>
-            <h2>{t('Solution')}</h2>
+          <div className='solution-div'>
+            <h2 className='h2-style'>{t('Solution')}</h2>
             <p>
-              {t('Maximum weight of the backpack:')} {maxWeight}
+              {t('Maximum weight of the backpack:')} <span>{maxWeight}</span>
             </p>
             <p>
-              {t('Maximum value:')} {maxValue}
+              {t('Maximum value:')} <span>{maxValue}</span>
             </p>
           </div>
-          <DataTable items={selectedItems} />
           <StepByStepTable steps={stepByStep} />
 
           <Bar
@@ -300,17 +301,19 @@ function KnapsackSolver({ onDataUpdate }) {
         </>
       )}
 
-      <div>
+      {isCompareVisible && (
         <div>
-          {t('Execution time')}: {dpExecutionTime.toFixed(10)} ms
+          <div>
+            {t('Execution time')}: {dpExecutionTime.toFixed(10)} ms
+          </div>
+          <div>
+            {t('Number of iterations')}: {dpIterations}
+          </div>
+          <div>
+            {t('Memory used')}: {memoryUsed.toFixed(4)} MB
+          </div>
         </div>
-        <div>
-          {t('Number of iterations')}: {dpIterations}
-        </div>
-        <div>
-          {t('Memory Used')}: {memoryUsed.toFixed(4)} MB
-        </div>
-      </div>
+      )}
 
       <ul className='circles'>
         {[...Array(10)].map((_, index) => (

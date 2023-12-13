@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import LanguageSelector from './LanguageSelector';
 import GlobeIcon from './languageSVG';
 
-const navLinks = ['Home', 'Rucksack', 'Salesman', 'Shortcut', 'Recognition'];
+const navLinks = ['Home', 'Rucksack', 'Salesman', 'Shortcut'];
 
 const Nav = () => {
   const { t } = useTranslation();

@@ -54,6 +54,7 @@ const BruteForceTSP = ({ onDataUpdate }) => {
   const [dpIterations, setDPIterations] = useState(0);
   const [memoryUsed, setMemoryUsed] = useState(0);
   const [startMemory, setStartMemory] = useState(0);
+  const [isCompareVisible, setIsCompareVisible] = useState(false);
 
   const addCity = () => {
     if (newCity) {
@@ -184,6 +185,7 @@ const BruteForceTSP = ({ onDataUpdate }) => {
 
   const handClick = () => {
     onDataUpdate(dpExecutionTime, dpIterations, memoryUsed);
+    setIsCompareVisible(true);
   };
 
   return (
@@ -296,17 +298,19 @@ const BruteForceTSP = ({ onDataUpdate }) => {
           </h2>
         </div>
       )}
-      <div>
+      {isCompareVisible && (
         <div>
-          {t('Execution time')}: {dpExecutionTime.toFixed(10)} ms
+          <div>
+            {t('Execution time')}: {dpExecutionTime.toFixed(10)} ms
+          </div>
+          <div>
+            {t('Number of iterations')}: {dpIterations}
+          </div>
+          <div>
+            {t('Memory used')}: {memoryUsed.toFixed(4)} MB
+          </div>
         </div>
-        <div>
-          {t('Number of iterations')}: {dpIterations}
-        </div>
-        <div>
-          {t('Memory used')}: {memoryUsed.toFixed(4)} MB
-        </div>
-      </div>
+      )}
     </div>
   );
 };

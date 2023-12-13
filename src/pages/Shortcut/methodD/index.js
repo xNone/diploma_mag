@@ -1,271 +1,200 @@
 import React, { useState, useEffect } from 'react';
-import Graph from 'react-graph-vis';
-import {
-  smallVariable,
-  mediumVariable,
-  largeVariable,
-  firstVariable,
-} from '../VariableMatrix';
 import { useTranslation } from 'react-i18next';
 
-const FloydWarshall = ({ onDataUpdate }) => {
-  const [size, setSize] = useState(2);
-  const [graph, setGraph] = useState([
-    ['', ''],
-    ['', ''],
-  ]);
-  const [solutionSteps, setSolutionSteps] = useState([]);
-  const [graphData, setGraphData] = useState(null);
-  const [isVisible, setIsVisible] = useState(false);
-  const { t } = useTranslation();
-  const [dpExecutionTime, setDPExecutionTime] = useState(0);
-  const [dpIterations, setDPIterations] = useState(0);
-  const [memoryUsed, setMemoryUsed] = useState(0);
-  const [startMemory, setStartMemory] = useState(0);
+const matrixData = {
+  Small: [
+    [0, 2, Infinity, 3, 1, Infinity, Infinity, 10],
+    [2, 0, 4, Infinity, Infinity, Infinity, Infinity, Infinity],
+    [Infinity, 4, 0, Infinity, Infinity, Infinity, Infinity, 3],
+    [3, Infinity, Infinity, 0, Infinity, Infinity, Infinity, 8],
+    [1, Infinity, Infinity, Infinity, 0, 2, Infinity, Infinity],
+    [Infinity, Infinity, Infinity, Infinity, 2, 0, 3, Infinity],
+    [Infinity, Infinity, Infinity, Infinity, Infinity, 3, 0, 1],
+    [10, Infinity, 3, 8, Infinity, Infinity, 1, 0],
+  ],
+  Medium: [
+    [0, Infinity, -2, Infinity],
+    [4, 0, 3, Infinity],
+    [Infinity, Infinity, 0, 2],
+    [Infinity, -1, Infinity, 0],
+  ],
+  Large: [
+    [0, 7, 9, Infinity, Infinity, 14],
+    [7, 0, 10, 15, Infinity, Infinity],
+    [9, 10, 0, 11, Infinity, 2],
+    [Infinity, 15, 11, 0, 6, Infinity],
+    [Infinity, Infinity, Infinity, 6, 0, 9],
+    [14, Infinity, 2, Infinity, 9, 0],
+  ],
+};
 
-  const options = {
-    layout: {
-      hierarchical: false,
-    },
-    edges: {
-      color: 'blue',
-    },
-    height: '500px',
-    physics: {
-      enabled: false,
-    },
-  };
+function DijkstraAlgorithm() {
+  const [matrixSize, setMatrixSize] = useState(3); // Default size
+  const [selectedExample, setSelectedExample] = useState('Custom');
+  const [startNode, setStartNode] = useState(0);
+  const [graph, setGraph] = useState([]);
+  const [shortestDistances, setShortestDistances] = useState([]);
+  const { t } = useTranslation();
+  const [visTalbe, setvisTalbe] = useState(true);
 
   useEffect(() => {
-    updateGraphData(graph);
-  }, [graph]);
-
-  const handleSizeChange = (event) => {
-    const newSize = parseInt(event.target.value, 10);
-
-    setSize(newSize);
-
-    switch (newSize) {
-      case 4:
-        setGraph(firstVariable);
-        break;
-      case 6:
-        setGraph(smallVariable);
-        break;
-      case 10:
-        setGraph(mediumVariable);
-        break;
-      case 20:
-        setGraph(largeVariable);
-        break;
-      default:
-        setGraph(createDefaultGraph(newSize));
+    if (selectedExample === 'Custom') {
+      // Initialize the graph with an empty matrix for custom input
+      const customGraph = Array.from({ length: matrixSize }, () =>
+        Array(matrixSize).fill(Infinity)
+      );
+      setGraph(customGraph);
+      setvisTalbe(true);
+    } else {
+      // Use the selected example from matrixData
+      setGraph(matrixData[selectedExample]);
+      setvisTalbe(false);
     }
+  }, [selectedExample, matrixSize]);
 
-    setSolutionSteps([]);
+  const handleSizeChange = (e) => {
+    const newSize = parseInt(e.target.value, 10);
+    setMatrixSize(newSize);
   };
 
-  const handleGraphChange = (event, rowIndex, colIndex) => {
-    const newValue =
-      event.target.value === '' ? Infinity : parseInt(event.target.value, 10);
-    const newGraph = graph.map((row, rIndex) =>
-      row.map((value, cIndex) =>
-        rIndex === rowIndex && cIndex === colIndex ? newValue : value
-      )
-    );
+  const handleExampleChange = (e) => {
+    const newExample = e.target.value;
+    setSelectedExample(newExample);
+  };
+
+  const handleStartNodeChange = (e) => {
+    const newStartNode = parseInt(e.target.value, 10);
+    setStartNode(newStartNode);
+  };
+
+  const handleMatrixValueChange = (row, col, e) => {
+    const newValue = parseInt(e.target.value, 10);
+    const newGraph = [...graph];
+    newGraph[row][col] = newValue;
     setGraph(newGraph);
-    setSolutionSteps([]);
   };
 
-  const handleSolveClick = () => {
-    setStartMemory(window.performance.memory.usedJSHeapSize);
-    const startTime = performance.now();
-    let iterationsCount = 0;
-
-    const n = size;
-    const dist = [];
-    const next = [];
-
-    // Инициализация матрицы расстояний и матрицы "следующих" вершин
-    for (let i = 0; i < n; i++) {
-      dist[i] = [];
-      next[i] = [];
-      for (let j = 0; j < n; j++) {
-        dist[i][j] = graph[i][j];
-        next[i][j] = j;
-      }
-    }
-
-    const steps = [];
-
-    // Алгоритм Флойда-Уоршелла
-    for (let k = 0; k < n; k++) {
-      steps.push(generateStep(dist, k));
-      for (let i = 0; i < n; i++) {
-        for (let j = 0; j < n; j++) {
-          iterationsCount++;
-
-          if (dist[i][k] + dist[k][j] < dist[i][j]) {
-            dist[i][j] = dist[i][k] + dist[k][j];
-            next[i][j] = k;
-          }
-        }
-      }
-    }
-
-    // Вывод результата в DOM
-    setSolutionSteps(steps);
-
-    const endTime = performance.now();
-    setDPExecutionTime(endTime - startTime);
-    setDPIterations(iterationsCount);
-
-    const endMemory = window.performance.memory.usedJSHeapSize;
-
-    const memoryUsed = (endMemory - startMemory) / (1024 * 1024);
-
-    setMemoryUsed(memoryUsed);
-  };
-
-  const generateStep = (dist, stepNumber) => {
-    const n = dist.length;
-
-    let step = `<h3>${t('Step')} ${stepNumber + 1}</h3>`;
-    step += '<table border="1"><thead><tr><th></th>';
-
-    // Заголовки столбцов
-    for (let i = 0; i < n; i++) {
-      step += `<th>${i + 1}</th>`;
-    }
-
-    step += '</tr></thead><tbody>';
-
-    // Заполнение таблицы
-    for (let i = 0; i < n; i++) {
-      step += `<tr><th>${i + 1}</th>`;
-      for (let j = 0; j < n; j++) {
-        let cellValue = dist[i][j];
-
-        // Проверяем, является ли текущая ячейка частью пути
-        const isPathCell =
-          stepNumber === n - 1 && i !== j && dist[i][j] !== Infinity;
-
-        step += `<td style="background: ${isPathCell ? 'none' : 'none'}">${
-          cellValue === Infinity ? '∞' : cellValue
-        }</td>`;
-      }
-      step += '</tr>';
-    }
-
-    step += '</tbody></table>';
-
-    setIsVisible(true);
-
-    return step;
-  };
-
-  const createDefaultGraph = (size) => {
-    const defaultGraph = [];
-    for (let i = 0; i < size; i++) {
-      defaultGraph[i] = [];
-      for (let j = 0; j < size; j++) {
-        defaultGraph[i][j] = i === j ? 0 : Infinity;
-      }
-    }
-    return defaultGraph;
-  };
-
-  const updateGraphData = (graph) => {
-    const nodes = [];
-    const edges = [];
-
-    for (let i = 0; i < graph.length; i++) {
-      nodes.push({ id: i + 1, label: `${i + 1}`, color: '#ccc' });
-      for (let j = 0; j < graph[i].length; j++) {
-        if (graph[i][j] !== Infinity && i !== j) {
-          edges.push({ from: i + 1, to: j + 1, label: `${graph[i][j]}` });
-        }
-      }
-    }
-
-    setGraphData({ nodes, edges });
-  };
-
-  const handClick = () => {
-    onDataUpdate(dpExecutionTime, dpIterations, memoryUsed);
+  const handleSolve = () => {
+    // Solve using Dijkstra's algorithm and set the results in state
+    const distances = dijkstra(graph, startNode);
+    setShortestDistances(distances);
   };
 
   return (
     <div>
       <div className='div-size-matrix'>
-        <div className='enter-size-matrix'>
-          <h2>{t('Select a matrix')}</h2>
-          <select value={size} onChange={handleSizeChange}>
-            <option value={2}>{t('Manual Entry')}</option>
-            <option value={4}>{t('First')}</option>
-            <option value={6}>{t('Small')}</option>
-            <option value={10}>Средний</option>
-            <option value={20}>Большой</option>
+        <h2>{t('Select a matrix')}</h2>
+        <label>
+          <select value={selectedExample} onChange={handleExampleChange}>
+            <option value='Custom'>Custom</option>
+            <option value='Small'>Small</option>
+            <option value='Medium'>Medium</option>
+            <option value='Large'>Large</option>
           </select>
-        </div>
+        </label>
         <div className='size-matrix'>
-          <label>
-            {t('Matrix size')}
-            <input
-              type='number'
-              min='2'
-              value={size}
-              onChange={handleSizeChange}
-            />
-          </label>
-        </div>
-        <div className='table-matrix'>
-          <table>
-            <tbody>
-              {graph.map((row, rowIndex) => (
-                <tr key={rowIndex}>
-                  {row.map((value, colIndex) => (
-                    <td key={colIndex}>
-                      <input
-                        type='number'
-                        value={value === Infinity ? '' : value}
-                        onChange={(event) =>
-                          handleGraphChange(event, rowIndex, colIndex)
-                        }
-                      />
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <button onClick={handleSolveClick}>{t('Result')}</button>
-          <button onClick={handClick}>{t('Compare')}</button>
-        </div>
-        <ul className='circles'>
-          {[...Array(10)].map((_, index) => (
-            <li key={index}></li>
-          ))}
-        </ul>
-      </div>
-      <div id='result-container'>
-        {isVisible && (
-          <div id='graph'>
-            <h4>{t('Graph')}</h4>
-            <Graph graph={graphData} options={options} />
+          {visTalbe && (
+            <label>
+              {t('Matrix size')}
+              <input
+                type='number'
+                min='1'
+                value={matrixSize}
+                onChange={handleSizeChange}
+              />
+            </label>
+          )}
+          <div className='size-matrix-div'>
+            <label>
+              Start Node:
+              <input
+                type='number'
+                value={startNode}
+                onChange={handleStartNodeChange}
+              />
+            </label>
           </div>
-        )}
-        <h2>{t('Solution Steps:')}</h2>
-        {solutionSteps.map((step, index) => (
-          <div
-            className='res-matrix-div'
-            key={index}
-            dangerouslySetInnerHTML={{ __html: step }}
-          />
-        ))}
+        </div>
       </div>
+      <div className='table-matrix'>
+        <h2>{t('Enter the matrix of weights of the edges:')}</h2>
+        <table>
+          <tbody>
+            {graph.map((row, rowIndex) => (
+              <tr key={rowIndex}>
+                {row.map((value, colIndex) => (
+                  <td key={colIndex}>
+                    <input
+                      type='number'
+                      value={value === Infinity ? '' : value}
+                      onChange={(e) =>
+                        handleMatrixValueChange(rowIndex, colIndex, e)
+                      }
+                    />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <button onClick={handleSolve}>{t('Result')}</button>
+      </div>
+      {shortestDistances.length > 0 && (
+        <div className='node-div'>
+          <h2 className='h2-style'>
+            {t('Shortest distance from')} <span>{startNode}</span>
+          </h2>
+          <ul>
+            {shortestDistances.map((distance, index) => (
+              <li key={index}>
+                <span>{`${t('Node')} ${index}:`}</span>{' '}
+                <span>{`${distance}`}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
-};
+}
 
-export default FloydWarshall;
+function dijkstra(graph, startNode) {
+  const numNodes = graph.length;
+  const distances = new Array(numNodes).fill(Infinity);
+  const visited = new Array(numNodes).fill(false);
+
+  distances[startNode] = 0;
+
+  for (let i = 0; i < numNodes - 1; i++) {
+    const minDistanceNode = findMinDistanceNode(distances, visited);
+    visited[minDistanceNode] = true;
+
+    for (let j = 0; j < numNodes; j++) {
+      if (!visited[j] && graph[minDistanceNode][j] !== Infinity) {
+        const currentDistance =
+          distances[minDistanceNode] + graph[minDistanceNode][j];
+        if (currentDistance < distances[j]) {
+          distances[j] = currentDistance;
+        }
+      }
+    }
+  }
+
+  return distances;
+}
+
+function findMinDistanceNode(distances, visited) {
+  let minDistance = Infinity;
+  let minDistanceNode = -1;
+
+  for (let i = 0; i < distances.length; i++) {
+    if (!visited[i] && distances[i] < minDistance) {
+      minDistance = distances[i];
+      minDistanceNode = i;
+    }
+  }
+
+  return minDistanceNode;
+}
+
+export default DijkstraAlgorithm;

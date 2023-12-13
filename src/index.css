@@ -745,7 +745,8 @@ body {
   border-bottom: 1px solid #ccc;
 }
 
-.bestDist-div h2 {
+.bestDist-div h2,
+.solution-div p {
   margin-bottom: 10px;
   font-size: 22px;
 }
@@ -756,7 +757,8 @@ body {
   font-weight: bold;
 }
 
-.bestDist-div h2 span {
+.bestDist-div h2 span,
+.solution-div p span {
   font-weight: bold;
   text-decoration: underline;
   color: #ccc;
@@ -825,7 +827,8 @@ body {
   border-bottom: 1px solid #ccc;
 }
 
-.div-size-matrix h2 {
+.div-size-matrix h2,
+.table-matrix h2 {
   font-size: 24px;
   color: #8aa6a3;
   font-weight: bold;
@@ -877,8 +880,19 @@ body {
   border-bottom: 1px solid #ccc;
 }
 
+.table-matrix input {
+  border: 1px solid #ccc;
+  background: none;
+  margin: 3px;
+  padding: 10px;
+  font-size: 16px;
+  color: #fff;
+  width: 200px;
+  height: 20px;
+}
+
 .table-matrix button {
-  margin-top: 20px;
+  margin: 20px 20px 0 0;
   background-color: #015958;
   border: 1px solid #0fc2c0;
   border-radius: 10px;
@@ -891,7 +905,7 @@ body {
   background: #0a3a40;
 }
 
-.table-matrix table {
+/* .table-matrix table {
   border: 1px solid #ccc;
 }
 
@@ -905,17 +919,19 @@ body {
   color: #fff;
   padding: 5px;
   font-size: 16px;
-}
+} */
 
-#result-container {
-}
-
-#result-container h2 {
+#result-container h2,
+.h2-style {
   margin: 30px 0;
   font-size: 26px;
   font-weight: bold;
   text-decoration: underline;
   color: #8aa6a3;
+}
+
+.h2-style span {
+  color: #fff;
 }
 
 .res-matrix-div {
@@ -986,4 +1002,81 @@ body {
 .compare-div tr th:first-child {
   border-top: 1px solid #0a3a40;
   border-left: 1px solid #0a3a40;
+}
+
+.res-matrix-div-span {
+  width: 100px;
+  text-align: center;
+  padding: 0 25px;
+  color: #008f8c;
+  font-weight: bold;
+}
+
+.res-matrix-div-table {
+  text-align: center;
+  border: 1px solid #ccc;
+  padding: 5px 25px;
+  width: 100px;
+}
+
+.home-div-con {
+  padding: 150px;
+  overflow: hidden;
+}
+
+.home-div {
+  width: 100%;
+  height: 600px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-top: 10px solid rgba(147, 148, 148, 0.514);
+  border-bottom: 10px solid rgba(147, 148, 148, 0.514);
+}
+
+.home-div p {
+  font-weight: bold;
+  font-size: 180px;
+  margin-left: 100px;
+  /* transform: perspective(800px) rotateY(15deg); */
+}
+
+::-webkit-scrollbar {
+  width: 10px; /* ширина скроллбара */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #8aa6a3; /* цвет ползунка скроллбара */
+  border-radius: 6px; /* закругленные углы ползунка */
+}
+
+::-webkit-scrollbar-track {
+  background-color: #0a3a40; /* цвет фона скроллбара */
+}
+
+.size-matrix-div {
+  margin-top: 15px;
+}
+
+.size-matrix-div label {
+  margin-left: 15px;
+}
+
+.node-div span {
+  font-size: 22px;
+}
+
+.node-div li {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed #ccc;
+}
+
+.node-div span:first-child {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.node-div span:last-child {
+  color: #8aa6a3;
 }

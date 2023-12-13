@@ -59,5 +59,19 @@
   "Compare": "Compare",
   "Execution time": "Execution time",
   "Number of iterations": "Number of iterations",
-  "Memory used": "Memory used"
+  "Memory used": "Memory used",
+  "Matrix on iteration": "Matrix on iteration",
+  "Discrete optimisation": "Discrete optimisation",
+  "Paths between vertices": "Paths between vertices",
+  "doesn't exist.": "doesn't exist.",
+  "The shortest route between the peaks": "The shortest route between the peaks",
+  "Shortest Path Result:": "Shortest Path Result:",
+  "The final matrix of shortest distances between vertices:": "The final matrix of shortest distances between vertices:",
+  "Enter the matrix of weights of the edges:": "Enter the matrix of weights of the edges:",
+  "Start Vertex:": "Start Vertex:",
+  "End Vertex:": "End Vertex:",
+  "Shortest distance from": "Shortest distance from",
+  "to": "to",
+  "Shortest path:": "Shortest path:",
+  "Node": "Node"
 }

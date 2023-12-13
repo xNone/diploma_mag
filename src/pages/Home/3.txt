@@ -1,0 +1,299 @@
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+
+const INFINITY_SYMBOL = '∞';
+const INFINITY_VALUE = Infinity;
+
+function FloydWarshallApp({ onDataUpdate }) {
+  const [matrixSize, setMatrixSize] = useState(4);
+  const [selectedSize, setSelectedSize] = useState('Custom');
+  const [customSizeInput, setCustomSizeInput] = useState('');
+  const [userWeights, setUserWeights] = useState([]);
+  const [dist, setDist] = useState([]);
+  const [nextVertex, setNextVertex] = useState([]);
+  const [iterationMatrices, setIterationMatrices] = useState([]);
+  const [updatedCells, setUpdatedCells] = useState(new Set());
+  const [pathResult, setPathResult] = useState('');
+  const { t } = useTranslation();
+  const [dpExecutionTime, setDPExecutionTime] = useState(0);
+  const [dpIterations, setDPIterations] = useState(0);
+  const [memoryUsed, setMemoryUsed] = useState(0);
+  const [startMemory, setStartMemory] = useState(0);
+  const [showDataTable, setShowDataTable] = useState(false);
+
+  const matrixData = {
+    Small: [
+      [0, Infinity, -2, Infinity],
+      [4, 0, 3, Infinity],
+      [Infinity, Infinity, 0, 2],
+      [Infinity, -1, Infinity, 0],
+    ],
+    Medium: [
+      /* матрица среднего размера */
+    ],
+    Large: [
+      /* матрица большого размера */
+    ],
+  };
+
+  useEffect(() => {
+    initializeWeights(matrixSize, selectedSize);
+  }, [matrixSize, selectedSize]);
+
+  const handleSizeSelectChange = (event) => {
+    const newSize = event.target.value;
+    setSelectedSize(newSize);
+
+    if (newSize === 'Custom') {
+      setMatrixSize(customSizeInput ? Number(customSizeInput) : 0);
+    } else {
+      const size = matrixData[newSize].length;
+      setMatrixSize(size);
+    }
+  };
+
+  const handleCustomSizeInputChange = (event) => {
+    const newSize = event.target.value;
+    setCustomSizeInput(newSize);
+    if (selectedSize === 'Custom') {
+      setMatrixSize(newSize ? Number(newSize) : 0);
+    }
+  };
+
+  const handleMatrixSizeChange = (event) => {
+    setMatrixSize(Number(event.target.value));
+  };
+
+  const initializeWeights = (size, selectedSize) => {
+    const weights =
+      matrixData[selectedSize] ||
+      Array.from({ length: size }, () => Array(size).fill(INFINITY_VALUE));
+    setUserWeights(weights);
+    setDist([]);
+    setNextVertex([]);
+    setIterationMatrices([]);
+    setUpdatedCells(new Set());
+  };
+
+  const handleWeightChange = (row, col, value) => {
+    const newWeights = userWeights.map((r, i) =>
+      r.map((c, j) =>
+        i === row && j === col
+          ? value === ''
+            ? INFINITY_VALUE
+            : Number(value)
+          : c
+      )
+    );
+    setUserWeights(newWeights);
+  };
+
+  const renderMatrixInput = () => {
+    return userWeights.map((row, rowIndex) => (
+      <div key={rowIndex} style={{ display: 'flex' }}>
+        {row.map((value, colIndex) => (
+          <input
+            key={colIndex}
+            type='text'
+            value={value === INFINITY_VALUE ? '' : value}
+            onChange={(e) =>
+              handleWeightChange(rowIndex, colIndex, e.target.value)
+            }
+          />
+        ))}
+      </div>
+    ));
+  };
+
+  const floydWarshall = (weights) => {
+    const startTime = performance.now();
+    let iterationsCount = 0;
+    const V = weights.length;
+    let dist = Array.from({ length: V }, () => Array(V).fill(INFINITY_VALUE));
+    let nextVertex = Array.from({ length: V }, () => Array(V).fill(null));
+    let iterationMatrices = [];
+    let newUpdatedCells = new Set();
+
+    for (let u = 0; u < V; u++) {
+      for (let v = 0; v < V; v++) {
+        if (weights[u][v] !== INFINITY_VALUE) {
+          dist[u][v] = weights[u][v];
+          nextVertex[u][v] = v;
+        }
+      }
+    }
+
+    for (let k = 0; k < V; k++) {
+      let currentIterationMatrix = dist.map((row) => row.slice());
+      iterationMatrices.push({
+        matrix: currentIterationMatrix,
+        updatedCells: new Set(newUpdatedCells),
+      });
+
+      for (let i = 0; i < V; i++) {
+        for (let j = 0; j < V; j++) {
+          if (dist[i][k] + dist[k][j] < dist[i][j]) {
+            dist[i][j] = dist[i][k] + dist[k][j];
+            nextVertex[i][j] = nextVertex[i][k];
+            newUpdatedCells.add(`${i}-${j}`);
+
+            iterationsCount++;
+          }
+        }
+      }
+    }
+
+    setUpdatedCells(newUpdatedCells);
+
+    const endTime = performance.now();
+    setDPExecutionTime(endTime - startTime);
+    setDPIterations(iterationsCount);
+
+    const endMemory = window.performance.memory.usedJSHeapSize;
+
+    const memoryUsed = (endMemory - startMemory) / (1024 * 1024);
+
+    setMemoryUsed(memoryUsed);
+    return { dist, nextVertex, iterationMatrices };
+  };
+
+  const reconstructPath = (nextVertex, start, end) => {
+    if (nextVertex[start][end] === null) {
+      return `Пути между вершинами ${start + 1} и ${end + 1} не существует.`;
+    }
+
+    let path = [start + 1];
+    while (start !== end) {
+      start = nextVertex[start][end];
+      path.push(start + 1);
+    }
+
+    return `Кратчайший путь между вершинами ${path.join(' -> ')}`;
+  };
+
+  const printMatrix = (matrix, iterationIndex) => {
+    const cellsToUpdate =
+      iterationIndex !== undefined
+        ? iterationMatrices[iterationIndex].updatedCells
+        : updatedCells;
+
+    return (
+      <div>
+        <div style={{ display: 'flex' }}>
+          <span className='res-matrix-div-span'></span>
+          {matrix[0].map((_, colIndex) => (
+            <span
+              className='res-matrix-div-span'
+              style={{ marginBottom: '10px' }}
+              key={colIndex}
+            >
+              {colIndex + 1}
+            </span>
+          ))}
+        </div>
+        {matrix.map((row, rowIndex) => (
+          <div key={rowIndex} style={{ display: 'flex' }}>
+            <span className='res-matrix-div-span'>{rowIndex + 1}</span>
+            {row.map((value, colIndex) => {
+              const isUpdated = cellsToUpdate.has(`${rowIndex}-${colIndex}`);
+              return (
+                <span
+                  className='res-matrix-div-table'
+                  key={colIndex}
+                  style={{
+                    background: isUpdated ? '#008f8c' : 'none',
+                  }}
+                >
+                  {value === INFINITY_VALUE ? INFINITY_SYMBOL : value}
+                </span>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const handleCalculate = () => {
+    const { dist, nextVertex, iterationMatrices } = floydWarshall(userWeights);
+    setDist(dist);
+    setNextVertex(nextVertex);
+    setIterationMatrices(iterationMatrices);
+
+    const startVertex = 0;
+    const endVertex = matrixSize - 1;
+    const pathResult = reconstructPath(nextVertex, startVertex, endVertex);
+    setPathResult(pathResult);
+    setShowDataTable(true);
+  };
+
+  const handClick = () => {
+    onDataUpdate(dpExecutionTime, dpIterations, memoryUsed);
+  };
+
+  return (
+    <div>
+      <div className='div-size-matrix'>
+        <h2>{t('Select a matrix')}</h2>
+        <select value={selectedSize} onChange={handleSizeSelectChange}>
+          <option value='Custom'>Custom</option>
+          <option value='Small'>Small</option>
+          <option value='Medium'>Medium</option>
+          <option value='Large'>Large</option>
+        </select>
+      </div>
+      <div className='size-matrix'>
+        {selectedSize === 'Custom' && (
+          <label>
+            {t('Matrix size')}
+            <input
+              type='number'
+              min='2'
+              value={customSizeInput}
+              onChange={handleCustomSizeInputChange}
+            />
+          </label>
+        )}
+      </div>
+
+      <div className='table-matrix'>
+        <h2>Введите матрицу весов рёбер:</h2>
+        {renderMatrixInput()}
+        <button onClick={handleCalculate}>{t('Result')}</button>
+        <button onClick={handClick}>{t('Compare')}</button>
+      </div>
+
+      {showDataTable && (
+        <>
+          <h2 className='h2-style'>{t('Solution Steps:')}</h2>
+        </>
+      )}
+
+      {iterationMatrices.map((item, index) => (
+        <div className='res-matrix-div' key={index}>
+          <h3>
+            {t('Matrix on iteration')} {index + 1}:
+          </h3>
+          {printMatrix(item.matrix, index)}
+        </div>
+      ))}
+      {showDataTable && (
+        <div>
+          <div>
+            <h2 className='h2-style'>
+              Финальная матрица кратчайших расстояний между вершинами:
+            </h2>
+            {printMatrix(dist)}
+          </div>
+
+          <div>
+            <h2 className='h2-style'>Результат кратчайшего пути:</h2>
+            <p>{pathResult}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default FloydWarshallApp;

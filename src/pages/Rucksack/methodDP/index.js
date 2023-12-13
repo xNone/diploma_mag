@@ -49,6 +49,12 @@ function KnapsackProblem({ onDataUpdate }) {
   const [memoryUsed, setMemoryUsed] = useState(0);
   const [startMemory, setStartMemory] = useState(0);
   const [isTableVisible, setIsTableVisible] = useState(true);
+  const [isCompareVisible, setIsCompareVisible] = useState(false);
+  const [ishowSteps, setIshowSteps] = useState(false);
+
+  const toggleShowSteps = () => {
+    setIshowSteps(!ishowSteps);
+  };
 
   const toggleTableVisibility = () => {
     setIsTableVisible(!isTableVisible);
@@ -156,6 +162,7 @@ function KnapsackProblem({ onDataUpdate }) {
 
   const handClick = () => {
     onDataUpdate(dpExecutionTime, dpIterations, memoryUsed);
+    setIsCompareVisible(true);
   };
 
   return (
@@ -251,12 +258,17 @@ function KnapsackProblem({ onDataUpdate }) {
           onChange={(e) => setCapacity(Number(e.target.value))}
         />
         <button onClick={solveKnapsack}>{t('Result')}</button>
+        <button onClick={toggleShowSteps}>{t('Show steps')}</button>
         <button onClick={handClick}>{t('Compare')}</button>
       </div>
 
       {showDataTable && (
         <>
           <Table items={selectedItems} />
+        </>
+      )}
+      {ishowSteps && (
+        <>
           <DataTable
             data={coordinates}
             items={items.length + 1}
@@ -288,18 +300,19 @@ function KnapsackProblem({ onDataUpdate }) {
           />
         </>
       )}
-
-      <div>
+      {isCompareVisible && (
         <div>
-          {t('Execution time')}: {dpExecutionTime.toFixed(10)} ms
+          <div>
+            {t('Execution time')}: {dpExecutionTime.toFixed(10)} ms
+          </div>
+          <div>
+            {t('Number of iterations')}: {dpIterations}
+          </div>
+          <div>
+            {t('Memory used')}: {memoryUsed.toFixed(4)} MB
+          </div>
         </div>
-        <div>
-          {t('Number of iterations')}: {dpIterations}
-        </div>
-        <div>
-          {t('Memory used')}: {memoryUsed.toFixed(4)} MB
-        </div>
-      </div>
+      )}
 
       <ul className='circles'>
         {[...Array(10)].map((_, index) => (

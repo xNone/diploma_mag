@@ -5,13 +5,13 @@ import {
   useNavigate,
   useLocation,
 } from 'react-router-dom';
-import FloydWarshall from './methodF';
+import FloydWarshallVisualizer from './methodF';
 import DijkstraWarshall from './methodD';
 import CompareShortcut from './Compare';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-const ShortcutMethod = () => {
+const DijkstraApp = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -82,7 +82,7 @@ const ShortcutMethod = () => {
       <Routes>
         <Route
           path='/'
-          element={<FloydWarshall onDataUpdate={handleChildDataDP} />}
+          element={<FloydWarshallVisualizer onDataUpdate={handleChildDataDP} />}
         />
         <Route
           path='/methodD'
@@ -106,4 +106,4 @@ const ShortcutMethod = () => {
   );
 };
 
-export default React.memo(ShortcutMethod);
+export default React.memo(DijkstraApp);

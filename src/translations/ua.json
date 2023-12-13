@@ -58,5 +58,19 @@
   "Compare": "Порівняння",
   "Execution time": "Час виконання",
   "Number of iterations": "Кількість ітерацій",
-  "Memory used": "Використана пам'ять"
+  "Memory used": "Використана пам'ять",
+  "Matrix on iteration": "Матриця на ітерації",
+  "Discrete optimisation": "Дискретна оптимізація",
+  "Paths between vertices": "Шляхи між вершинами",
+  "doesn't exist.": "не існує.",
+  "The shortest route between the peaks": "Найкоротший шлях між вершинами",
+  "Shortest Path Result:": "Результат найкоротшого шляху:",
+  "The final matrix of shortest distances between vertices:": "Фінальна матриця найкоротших відстаней між вершинами:",
+  "Enter the matrix of weights of the edges:": "Введіть матрицю ваг ребер:",
+  "Start Vertex:": "Початкова вершина:",
+  "End Vertex:": "Кінцева вершина:",
+  "Shortest distance from": "Найкоротша відстань від",
+  "to": "до",
+  "Shortest path:": "Найкоротший шлях:",
+  "Node": "Вузол"
 }
