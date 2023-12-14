@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  Small,
+  SmallName,
+  Large2,
+  Large2Name,
+  Medium,
+  MediumName,
+  Large,
+  LargeName,
+} from '../VariableMatrix';
 
 const TravelingSalesman = ({ onDataUpdate }) => {
   const [cityNames, setCityNames] = useState([]);
@@ -47,16 +57,17 @@ const TravelingSalesman = ({ onDataUpdate }) => {
 
     // Set cityNames and distanceMatrix based on the selected size
     if (size === 'Small') {
-      setCityNames(['A', 'B', 'C']);
-      setDistanceMatrix([
-        [0, 1, 4],
-        [1, 0, 2],
-        [4, 2, 0],
-      ]);
+      setCityNames(SmallName);
+      setDistanceMatrix(Small);
     } else if (size === 'Medium') {
-      // Set Medium size data
+      setCityNames(MediumName);
+      setDistanceMatrix(Medium);
     } else if (size === 'Large') {
-      // Set Large size data
+      setCityNames(LargeName);
+      setDistanceMatrix(Large);
+    } else if (size === 'Large2') {
+      setCityNames(Large2Name);
+      setDistanceMatrix(Large2);
     }
   };
 
@@ -181,6 +192,7 @@ const TravelingSalesman = ({ onDataUpdate }) => {
           <option value='Small'>{t('Small')}</option>
           <option value='Medium'>{t('Medium')}</option>
           <option value='Large'>{t('Large')}</option>
+          <option value='Large2'>{t('Large2')}</option>
         </select>
       </div>
       <div className='main-city-div'>

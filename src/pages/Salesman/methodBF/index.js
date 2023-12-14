@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  Small,
+  SmallName,
+  Large2,
+  Large2Name,
+  Medium,
+  MediumName,
+  Large,
+  LargeName,
+} from '../VariableMatrix';
 
 const DetailedSolution = ({ cityNames, distanceMatrix, bestPath }) => {
   const { t } = useTranslation();
@@ -82,20 +92,18 @@ const BruteForceTSP = ({ onDataUpdate }) => {
     setSelectedSize(size);
 
     // Set cityNames and distanceMatrix based on the selected size
-    if (size === 'Manual') {
-      setCityNames([]);
-      setDistanceMatrix([]);
-    } else if (size === 'Small') {
-      setCityNames(['A', 'B', 'C']);
-      setDistanceMatrix([
-        [0, 1, 4],
-        [1, 0, 2],
-        [4, 2, 0],
-      ]);
+    if (size === 'Small') {
+      setCityNames(SmallName);
+      setDistanceMatrix(Small);
     } else if (size === 'Medium') {
-      // Set Medium size data
+      setCityNames(MediumName);
+      setDistanceMatrix(Medium);
     } else if (size === 'Large') {
-      // Set Large size data
+      setCityNames(LargeName);
+      setDistanceMatrix(Large);
+    } else if (size === 'Large2') {
+      setCityNames(Large2Name);
+      setDistanceMatrix(Large2);
     }
   };
 
@@ -115,7 +123,6 @@ const BruteForceTSP = ({ onDataUpdate }) => {
 
     for (const step of path) {
       let localLowerBound = H;
-      iterationsCount++;
       for (let i = 0; i < matrix.length; i++) {
         if (!path.includes(i)) {
           const row = matrix[i].filter((_, j) => !path.includes(j));
@@ -124,6 +131,7 @@ const BruteForceTSP = ({ onDataUpdate }) => {
       }
 
       for (let j = 0; j < matrix[0].length; j++) {
+        iterationsCount++;
         if (!path.includes(j)) {
           const column = matrix
             .map((row) => row[j])
@@ -197,6 +205,7 @@ const BruteForceTSP = ({ onDataUpdate }) => {
           <option value='Small'>{t('Small')}</option>
           <option value='Medium'>{t('Medium')}</option>
           <option value='Large'>{t('Large')}</option>
+          <option value='Large2'>{t('Large2')}</option>
         </select>
       </div>
       <div className='main-city-div'>
