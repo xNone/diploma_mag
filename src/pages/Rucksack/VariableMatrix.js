@@ -8,6 +8,11 @@ export const sizeItems = {
     // Add more items as needed
   ],
   Medium: [
+    { name: 'A', weight: 6, value: 5 },
+    { name: 'B', weight: 4, value: 3 },
+    { name: 'C', weight: 3, value: 1 },
+    { name: 'D', weight: 2, value: 3 },
+    { name: 'E', weight: 5, value: 6 },
     { name: 'F', weight: 8, value: 7 },
     { name: 'G', weight: 5, value: 4 },
     { name: 'H', weight: 3, value: 2 },
