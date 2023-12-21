@@ -1,55 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-function floydWarshall(graph) {
-  const V = graph.length;
-  let dist = [];
-  let next = [];
-
-  // Initialize dist and next matrices
-  for (let i = 0; i < V; i++) {
-    dist[i] = [];
-    next[i] = [];
-    for (let j = 0; j < V; j++) {
-      dist[i][j] = graph[i][j];
-      if (i !== j && graph[i][j] < Infinity) {
-        next[i][j] = j;
-      } else {
-        next[i][j] = null;
-      }
-    }
-  }
-
-  // Floyd-Warshall algorithm
-  for (let k = 0; k < V; k++) {
-    for (let i = 0; i < V; i++) {
-      for (let j = 0; j < V; j++) {
-        if (dist[i][j] > dist[i][k] + dist[k][j]) {
-          dist[i][j] = dist[i][k] + dist[k][j];
-          next[i][j] = next[i][k];
-        }
-      }
-    }
-  }
-
-  return { dist, next };
-}
-
-function reconstructPath(u, v, next) {
-  if (next[u][v] === null) {
-    return [];
-  }
-
-  let pathArray = [u];
-  while (u !== v) {
-    u = next[u][v];
-    pathArray.push(u);
-  }
-
-  return pathArray;
-}
-
-function FloydWarshallVisualizer() {
+function FloydWarshallVisualizer({ onDataUpdate }) {
   const [customSize, setCustomSize] = useState(4);
   const [matrixSize, setMatrixSize] = useState('Custom');
   const [matrixData, setMatrixData] = useState([
@@ -63,6 +15,72 @@ function FloydWarshallVisualizer() {
   const [shortestPath, setShortestPath] = useState([]);
   const [dist, setDist] = useState([]);
   const { t } = useTranslation();
+  const [dpExecutionTime, setDPExecutionTime] = useState(0);
+  const [dpIterations, setDPIterations] = useState(0);
+  const [memoryUsed, setMemoryUsed] = useState(0);
+  const [startMemory, setStartMemory] = useState(0);
+  const [isCompareVisible, setIsCompareVisible] = useState(false);
+
+  function floydWarshall(graph) {
+    const V = graph.length;
+    let dist = [];
+    let next = [];
+    const startTime = performance.now();
+    let iterationsCount = 0;
+
+    // Initialize dist and next matrices
+    for (let i = 0; i < V; i++) {
+      dist[i] = [];
+      next[i] = [];
+      iterationsCount++;
+      for (let j = 0; j < V; j++) {
+        dist[i][j] = graph[i][j];
+        if (i !== j && graph[i][j] < Infinity) {
+          next[i][j] = j;
+        } else {
+          next[i][j] = null;
+        }
+      }
+    }
+
+    // Floyd-Warshall algorithm
+    for (let k = 0; k < V; k++) {
+      for (let i = 0; i < V; i++) {
+        for (let j = 0; j < V; j++) {
+          if (dist[i][j] > dist[i][k] + dist[k][j]) {
+            dist[i][j] = dist[i][k] + dist[k][j];
+            next[i][j] = next[i][k];
+          }
+        }
+      }
+    }
+
+    const endTime = performance.now();
+    setDPExecutionTime(endTime - startTime);
+    setDPIterations(iterationsCount);
+
+    const endMemory = window.performance.memory.usedJSHeapSize;
+
+    const memoryUsed = (endMemory - startMemory) / (1024 * 1024);
+
+    setMemoryUsed(memoryUsed);
+
+    return { dist, next };
+  }
+
+  function reconstructPath(u, v, next) {
+    if (next[u][v] === null) {
+      return [];
+    }
+
+    let pathArray = [u];
+    while (u !== v) {
+      u = next[u][v];
+      pathArray.push(u);
+    }
+
+    return pathArray;
+  }
 
   const predefinedMatrices = {
     Small: [
@@ -242,11 +260,17 @@ function FloydWarshallVisualizer() {
   };
 
   const findShortestPath = () => {
+    setStartMemory(window.performance.memory.usedJSHeapSize);
     const { dist, next } = floydWarshall(matrixData);
     setDist(dist);
 
     const path = reconstructPath(startVertex, endVertex, next);
     setShortestPath(path);
+  };
+
+  const handClick = () => {
+    onDataUpdate(dpExecutionTime, dpIterations, memoryUsed);
+    setIsCompareVisible(true);
   };
 
   return (
@@ -257,7 +281,6 @@ function FloydWarshallVisualizer() {
           <option value='Custom'>Custom</option>
           <option value='Small'>Small</option>
           <option value='Medium'>Medium</option>
-          <option value='Large'>Large</option>
         </select>
         <div className='size-matrix'>
           {matrixSize === 'Custom' && (
@@ -307,6 +330,7 @@ function FloydWarshallVisualizer() {
           </tbody>
         </table>
         <button onClick={findShortestPath}>{t('Result')}</button>
+        <button onClick={handClick}>{t('Compare')}</button>
       </div>
       <div>
         {dist &&
@@ -324,6 +348,19 @@ function FloydWarshallVisualizer() {
           </div>
         )}
       </div>
+      {isCompareVisible && (
+        <div>
+          <div>
+            {t('Execution time')}: {dpExecutionTime.toFixed(10)} ms
+          </div>
+          <div>
+            {t('Number of iterations')}: {dpIterations}
+          </div>
+          <div>
+            {t('Memory used')}: {memoryUsed.toFixed(4)} MB
+          </div>
+        </div>
+      )}
     </div>
   );
 }

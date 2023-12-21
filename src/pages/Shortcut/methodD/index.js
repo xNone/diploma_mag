@@ -142,7 +142,7 @@ const matrixData = {
   ],
 };
 
-function DijkstraAlgorithm() {
+function DijkstraAlgorithm({onDataUpdate}) {
   const [matrixSize, setMatrixSize] = useState(3); // Default size
   const [selectedExample, setSelectedExample] = useState('Custom');
   const [startNode, setStartNode] = useState(0);
@@ -150,6 +150,61 @@ function DijkstraAlgorithm() {
   const [shortestDistances, setShortestDistances] = useState([]);
   const { t } = useTranslation();
   const [visTalbe, setvisTalbe] = useState(true);
+  const [dpExecutionTime, setDPExecutionTime] = useState(0);
+  const [dpIterations, setDPIterations] = useState(0);
+  const [memoryUsed, setMemoryUsed] = useState(0);
+  const [startMemory, setStartMemory] = useState(0);
+  const [isCompareVisible, setIsCompareVisible] = useState(false);
+
+  function dijkstra(graph, startNode) {
+    const numNodes = graph.length;
+    const distances = new Array(numNodes).fill(Infinity);
+    const visited = new Array(numNodes).fill(false);
+    const startTime = performance.now();
+    let iterationsCount = 0;
+
+    distances[startNode] = 0;
+
+    for (let i = 0; i < numNodes - 1; i++) {
+      const minDistanceNode = findMinDistanceNode(distances, visited);
+      visited[minDistanceNode] = true;
+      iterationsCount++;
+      for (let j = 0; j < numNodes; j++) {
+        if (!visited[j] && graph[minDistanceNode][j] !== Infinity) {
+          const currentDistance =
+            distances[minDistanceNode] + graph[minDistanceNode][j];
+          if (currentDistance < distances[j]) {
+            distances[j] = currentDistance;
+          }
+        }
+      }
+    }
+
+    const endTime = performance.now();
+    setDPExecutionTime(endTime - startTime);
+    setDPIterations(iterationsCount);
+
+    const endMemory = window.performance.memory.usedJSHeapSize;
+
+    const memoryUsed = (endMemory - startMemory) / (1024 * 1024);
+
+    setMemoryUsed(memoryUsed);
+    return distances;
+  }
+
+  function findMinDistanceNode(distances, visited) {
+    let minDistance = Infinity;
+    let minDistanceNode = -1;
+
+    for (let i = 0; i < distances.length; i++) {
+      if (!visited[i] && distances[i] < minDistance) {
+        minDistance = distances[i];
+        minDistanceNode = i;
+      }
+    }
+
+    return minDistanceNode;
+  }
 
   useEffect(() => {
     if (selectedExample === 'Custom') {
@@ -189,9 +244,15 @@ function DijkstraAlgorithm() {
   };
 
   const handleSolve = () => {
+    setStartMemory(window.performance.memory.usedJSHeapSize);
     // Solve using Dijkstra's algorithm and set the results in state
     const distances = dijkstra(graph, startNode);
     setShortestDistances(distances);
+  };
+
+  const handClick = () => {
+    onDataUpdate(dpExecutionTime, dpIterations, memoryUsed);
+    setIsCompareVisible(true);
   };
 
   return (
@@ -203,7 +264,6 @@ function DijkstraAlgorithm() {
             <option value='Custom'>Custom</option>
             <option value='Small'>Small</option>
             <option value='Medium'>Medium</option>
-            <option value='Large'>Large</option>
           </select>
         </label>
         <div className='size-matrix'>
@@ -252,6 +312,7 @@ function DijkstraAlgorithm() {
           </tbody>
         </table>
         <button onClick={handleSolve}>{t('Result')}</button>
+        <button onClick={handClick}>{t('Compare')}</button>
       </div>
       {shortestDistances.length > 0 && (
         <div className='node-div'>
@@ -268,47 +329,20 @@ function DijkstraAlgorithm() {
           </ul>
         </div>
       )}
+      {isCompareVisible && (
+        <div>
+          <div>
+            {t('Execution time')}: {dpExecutionTime.toFixed(10)} ms
+          </div>
+          <div>
+            {t('Number of iterations')}: {dpIterations}
+          </div>
+          <div>
+            {t('Memory used')}: {memoryUsed.toFixed(4)} MB
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
-function dijkstra(graph, startNode) {
-  const numNodes = graph.length;
-  const distances = new Array(numNodes).fill(Infinity);
-  const visited = new Array(numNodes).fill(false);
-
-  distances[startNode] = 0;
-
-  for (let i = 0; i < numNodes - 1; i++) {
-    const minDistanceNode = findMinDistanceNode(distances, visited);
-    visited[minDistanceNode] = true;
-
-    for (let j = 0; j < numNodes; j++) {
-      if (!visited[j] && graph[minDistanceNode][j] !== Infinity) {
-        const currentDistance =
-          distances[minDistanceNode] + graph[minDistanceNode][j];
-        if (currentDistance < distances[j]) {
-          distances[j] = currentDistance;
-        }
-      }
-    }
-  }
-
-  return distances;
-}
-
-function findMinDistanceNode(distances, visited) {
-  let minDistance = Infinity;
-  let minDistanceNode = -1;
-
-  for (let i = 0; i < distances.length; i++) {
-    if (!visited[i] && distances[i] < minDistance) {
-      minDistance = distances[i];
-      minDistanceNode = i;
-    }
-  }
-
-  return minDistanceNode;
-}
-
 export default DijkstraAlgorithm;
